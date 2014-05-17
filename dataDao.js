@@ -83,9 +83,28 @@ exports.dataDao = function() {
              
                 }
                 if (typeof dataToInsert.id !== 'undefined' && dataToInsert.id !== null){
-                    queryString = 'INSERT INTO ' + tableName + '(' + columns.join() + ') VALUES (' + values.join() +')';
+                  queryString = 'UPDATE ' + tableName + ' SET '
+                  var whereCondition = ' where id=';
+                  var called = false;
+                  concatOperator = function() {
+                    if(!called) {
+                        called = true;
+                        return '';
+                    }    
+                    return ',';
+                  };
+                  for(var i=0;i<columns.length;i++) {
+                      if(columns[i]=='"id"') {
+                          whereCondition += values[i];
+                          continue;
+                      }
+                      queryString += concatOperator() + columns[i] + '=' + values[i];                      
+                  }
+
+                  queryString += whereCondition;
                 } else {
-                  
+                     queryString = 'INSERT INTO ' + tableName + '(' + columns.join() + ') VALUES (' + values.join() +')';
+                    
                 }
                 connection.query(queryString, function() {}, params.errorHandler, params.successHandler);
             });
