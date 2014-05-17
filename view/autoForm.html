@@ -1,0 +1,22 @@
+
+<body ng-controller="gridController">
+    <legend>autoform</legend>  
+        <form 
+             class="form-horizontal"
+              ng-submit="submit()"
+         >
+            <div  
+                class="form-group">
+                <div class="col-xs-10"
+                autoform
+              formname="editForm" 
+              disabledvar="formDisabled" 
+              model="model"
+              ng-repeat="field in dataSchema" 
+              content="field"></div>
+            </div>
+            <input type="submit" value=""></input>
+        </form>              
+
+        
+</body>
