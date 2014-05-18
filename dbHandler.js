@@ -1,6 +1,7 @@
 exports.dbHandler = function(connectionString, errorHandler, successHandler) {
     var pg = require('pg');
     var client = new pg.Client(connectionString);
+	console.log(connectionString);
     client.connect(function(err, client, done) {
         if(err) {
             client.end();
