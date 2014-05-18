@@ -1,13 +1,4 @@
 var dbHandler = require('./dbHandler.js');
-var conString = "postgres://postgres:hieWueS8@localhost:5432/stz";
-var connection = dbHandler.dbHandler(conString, 
-        function() {
-        
-        }, function() {
-            
-        }
-);
-
 var dataDao = require('./dataDao.js').dataDao();
 
 var express = require('express');
