@@ -11,6 +11,11 @@ app.config(function($routeProvider) {
                 templateUrl: 'tableview.html',
                 controller: 'gridController'
             }).
+            when('/autoform/:viewName/:id',
+            {
+                controller: 'autoFormController',
+                templateUrl: 'autoForm.html'
+            }).
             when('/autoform/:viewName',
             {
                 controller: 'autoFormController',

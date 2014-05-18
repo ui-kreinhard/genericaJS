@@ -50,8 +50,14 @@ app.get('/formdata', function(req, res) {
         res.statusCode = 200;
         res.send(response);
     };
-    dataDao.readOutSchemaData(query);
-
+    if(!query.id) {
+        query.id = -1;
+    } 
+    query.filter = {
+            id: query.id  
+    };
+    //dataDao.readOutSchemaData(query);
+    dataDao.readOutTable(query)
 });
 
 app.get('/readout_table', function(req,res) {
