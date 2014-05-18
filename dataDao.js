@@ -38,6 +38,7 @@ exports.dataDao = function() {
             getData: function(endQuery) {
                 var orderByString = '';
                 var newOrderByArray = [];
+                var filter = ' WHERE 1=1';
                 if (params.orderBy) {
                     if (typeof params.orderBy == 'string') {
                         orderByString = ' ORDER BY ' + params.orderBy + ' ' + params.orderByDirection;
@@ -48,7 +49,18 @@ exports.dataDao = function() {
                         orderByString = ' ORDER BY ' + newOrderByArray.join(',');
                     }
                 }
-                connection.query('select * from ' + params.tableName + orderByString + ' LIMIT ' + params.pageSize + ' OFFSET ' + (params.pageSize * (params.page - 1)),
+                
+                if(params.filter) {
+                    for(var property in params.filter) {
+                        var value = params.filter[property];
+                        filter += ' AND ' + property + '=' + "'" + value + "'";
+                    }
+                }
+                var offset = '';
+                if(params.pageSize && params.page) {
+                    offset = ' LIMIT ' + params.pageSize + ' OFFSET ' + (params.pageSize * (params.page - 1));
+                }
+                connection.query('select * from ' + params.tableName + filter + orderByString  + offset,
                         function(result) {
                             response.data.push(result);
                         },
@@ -82,6 +94,7 @@ exports.dataDao = function() {
                         values.push("'" + value + "'");
              
                 }
+                // recognize if we have an id - if so, it has to be an update
                 if (typeof dataToInsert.id !== 'undefined' && dataToInsert.id !== null){
                   queryString = 'UPDATE ' + tableName + ' SET '
                   var whereCondition = ' where id=';
@@ -126,7 +139,7 @@ exports.dataDao = function() {
                 schema: [],
                 data: []
             };
-          var local = localFunctions(params, response);
+            var local = localFunctions(params, response);
             local.getSchema(
                     function() {
                         local.getData(function() {

@@ -1,12 +1,15 @@
 app.controller('autoFormController', function($scope, $http, $routeParams) {
-   $scope.model = {};
+    $scope.model = {};
     var httpParameters = {
         tableName: $routeParams.viewName
 
     };
     $http({
         method: 'GET',
-        params: httpParameters,
+        params: {
+            tableName: $routeParams.viewName,
+            id: $routeParams.id
+        },
         url: '../formdata'
     }).
             success(
@@ -16,19 +19,26 @@ app.controller('autoFormController', function($scope, $http, $routeParams) {
                 columns = data.schema;
 
                 $scope.dataSchema = data.schema;
-
+                if (data.data[0]) {
+                    var valuesOfRecord = data.data[0];
+                    for (var propertyName in valuesOfRecord) {
+                        var value = valuesOfRecord[propertyName];
+                        $scope.model[propertyName] = value;
+                    }
+                }
             }).
             error(function(data, status, headers, config) {
         console.log(status);
     });
 
- 
+
     $scope.submit = function() {
         $http({
             method: 'POST',
-            data: { 
+            data: {
                 data: $scope.model,
                 tableName: $routeParams.viewName
+
             },
             url: '../insert_or_update'
         }).
@@ -46,14 +56,18 @@ app.directive('autoform', function($compile) {
     var getTemplate = function(scope) {
         var retStr = '';
         var field = scope.content.field;
+
         var displayName = scope.content.displayName;
         var data_type = scope.content.data_type;
         var textLength = scope.content.textlength;
         retStr += '<label class="control-label col-xs-2" for="' + field + '">' + displayName + '</label>\n\
         <div class="col-xs-10">';
+        if (field == 'id') {
+            data_type = 'id';
+        }
         switch (data_type) {
             case 'character varying':
-                if (textLength > 65) {
+                if (textLength < 65) {
                     retStr += '<input ng-model="model.' + field + '" id="' + field + '"></input>';
                 } else {
                     retStr += '<textarea ng-model="model.' + field + '" id="' + field + '"></textarea>';
@@ -65,7 +79,9 @@ app.directive('autoform', function($compile) {
             case 'boolean':
                 retStr += '<input type="checkbox" ng-model="model.' + field + '" id="' + field + '"></input>';
                 break;
-
+            case 'id':
+                retStr += '<input ng-model="model.' + field + '" id="' + field + '" disabled></input>';
+                break;
             default:
                 retStr += '<input ng-model="model.' + field + '" id="' + field + '"></input>';
                 break;
