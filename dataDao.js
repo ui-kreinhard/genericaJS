@@ -10,13 +10,43 @@ var connection = dbHandler.dbHandler(conString,
 }
 );
 exports.dataDao = function() {
+    var getFilter =  function(params) {
+                var filter = ' WHERE 1=1 ';
+                 if(params.filter) {
+                    for(var property in params.filter) {
+                        var value = params.filter[property];
+                        filter += ' AND ' + property + '=' + "'" + value + "'";
+                    }
+                }
+                return filter;
+            };
+    var getOrderBy = function(params) {
+                var orderByString = '';
+
+                if (params.orderBy) {
+                    if (typeof params.orderBy == 'string') {
+                        orderByString = ' ORDER BY ' + params.orderBy + ' ' + params.orderByDirection;
+                    } else {
+                        for (var i = 0; i < params.orderBy.length; i++) {
+                            newOrderByArray.push(params.orderBy[i] + ' ' + params.orderByDirection[i]);
+                        }
+                        orderByString = ' ORDER BY ' + newOrderByArray.join(',');
+                    }
+                }
+                return orderByString;
+            };
+            var getOffset = function(params) {
+                var offset = '';
+                   if(params.pageSize && params.page) {
+                    offset = ' LIMIT ' + params.pageSize + ' OFFSET ' + (params.pageSize * (params.page - 1));
+                }
+                return offset;
+            };
     var localFunctions = function(params, response) {
         return {
-            getPrimaryKey: function(endQuery) {
-                
-            },
+          
             getCount: function() {
-                connection.query('select count(*) as "dataCount" from ' + params.tableName,
+                connection.query('select count(*) as "dataCount" from ' + params.tableName + getFilter(params) ,
                         function(result) {
                             response.dataCount = result.dataCount;
                         },
@@ -38,28 +68,11 @@ exports.dataDao = function() {
             getData: function(endQuery) {
                 var orderByString = '';
                 var newOrderByArray = [];
-                var filter = ' WHERE 1=1';
-                if (params.orderBy) {
-                    if (typeof params.orderBy == 'string') {
-                        orderByString = ' ORDER BY ' + params.orderBy + ' ' + params.orderByDirection;
-                    } else {
-                        for (var i = 0; i < params.orderBy.length; i++) {
-                            newOrderByArray.push(params.orderBy[i] + ' ' + params.orderByDirection[i]);
-                        }
-                        orderByString = ' ORDER BY ' + newOrderByArray.join(',');
-                    }
-                }
+                var filter = getFilter(params);
+                orderByString = getOrderBy(params);
                 
-                if(params.filter) {
-                    for(var property in params.filter) {
-                        var value = params.filter[property];
-                        filter += ' AND ' + property + '=' + "'" + value + "'";
-                    }
-                }
-                var offset = '';
-                if(params.pageSize && params.page) {
-                    offset = ' LIMIT ' + params.pageSize + ' OFFSET ' + (params.pageSize * (params.page - 1));
-                }
+                var offset = getOffset(params);
+             
                 connection.query('select * from ' + params.tableName + filter + orderByString  + offset,
                         function(result) {
                             response.data.push(result);
