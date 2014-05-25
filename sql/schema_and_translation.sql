@@ -1,6 +1,6 @@
--- View: schema_and_translation
+﻿-- View: schema_and_translation
 
--- DROP VIEW schema_and_translation;
+DROP VIEW schema_and_translation;
 
 CREATE OR REPLACE VIEW schema_and_translation AS 
  SELECT c.table_name,
