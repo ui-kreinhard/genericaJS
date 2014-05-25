@@ -61,7 +61,7 @@ exports.dataDao = function() {
                     function(result) {
                         if(result.data_type=='combobox') {
                             result.selectionElements = [];
-                            var values = result.values.split(",");
+                            var values = result.valuescombobox.split(",");
                             var labels = result.labels.split(",");
                             for(var i=0;i<values.length;i++) {
                                 result.selectionElements.push({

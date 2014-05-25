@@ -12,7 +12,7 @@ CREATE OR REPLACE VIEW schema_and_translation AS
            FROM rel_mapping_readout(COALESCE(mappings.table_name::character varying, 'dummy_rel'::character varying)::regclass) rel_mapping_readout(id, value, label)) AS valuescombobox,
     ( SELECT string_agg(rel_mapping_readout.label::text, ','::text) AS string_agg
            FROM rel_mapping_readout(COALESCE(mappings.table_name::character varying, 'dummy_rel'::character varying)::regclass) rel_mapping_readout(id, value, label)) AS labels,
-    (((t.table_name::text || '_'::text) || c.column_name::text) || '_'::text) || '_rel_mapping'::text,
+ 
     COALESCE(trl.translation, c.column_name::character varying) AS "displayName",
     true AS visible
    FROM tables t
@@ -21,7 +21,7 @@ CREATE OR REPLACE VIEW schema_and_translation AS
    LEFT JOIN tables mappings ON mappings.table_name::text = (((t.table_name::text || '_'::text) || c.column_name::text) || '_rel_mapping'::text)
    LEFT JOIN translations trl ON trl.table_name = t.table_name::bpchar AND trl.column_name::text = c.column_name::text AND (EXISTS ( SELECT 1
    FROM user_language
-  WHERE user_language.username::name = "current_user"()))
+ WHERE user_language.username::name = "current_user"() and trl.language_id = user_language.language_id))
   ORDER BY t.table_name, feo.id;
 
 ALTER TABLE schema_and_translation

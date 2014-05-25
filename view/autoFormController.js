@@ -66,7 +66,14 @@ app.directive('autoform', function($compile) {
             data_type = 'id';
         }
         switch (data_type) {
-            
+            case 'combobox':
+                var selectionElements = scope.content.selectionElements;
+                retStr += '<select ng-model="model.' + field + '" id="' + field + '">';
+                angular.forEach(selectionElements, function(value, key) {
+                    retStr += '<option value="' + value.value + '">' + value.label + '</option>';
+                });
+                retStr += '</select>';
+                break;
             case 'character varying':
                 if (textLength < 65) {
                     retStr += '<input ng-model="model.' + field + '" id="' + field + '"></input>';
