@@ -66,6 +66,7 @@ app.directive('autoform', function($compile) {
             data_type = 'id';
         }
         switch (data_type) {
+            
             case 'character varying':
                 if (textLength < 65) {
                     retStr += '<input ng-model="model.' + field + '" id="' + field + '"></input>';
