@@ -11,7 +11,7 @@ exports.dbHandler = function(connectionString, errorHandler, successHandler) {
     });
     
     client.oldQuery = client.query;
-    client.query = function(query, successHandlerQuery, errorHandlerQuery, endQuery) {
+    client.query = function(query, successHandlerQuery, errorHandlerQuery, endQuery, transformationRules) {
         console.log(query);
         var retQuery = client.oldQuery(query, 
         function(err) {
@@ -19,8 +19,19 @@ exports.dbHandler = function(connectionString, errorHandler, successHandler) {
                 errorHandlerQuery(err);
             }
         });    
-        retQuery.on('row', successHandlerQuery);
+        if(transformationRules) {
+            retQuery.on('row', function(result) {
+               for(var i=0;i<transformationRules.length;i++) {
+                   var rule = transformationRules[i];
+                   result = rule(result);
+               } 
+               successHandlerQuery(result);
+            });
+        } else {
+            retQuery.on('row', successHandlerQuery);
+        }
         retQuery.on('end', endQuery);
+        
     };
     return client;
 };

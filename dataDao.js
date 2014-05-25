@@ -57,13 +57,29 @@ exports.dataDao = function() {
                 );
             },
             getSchema: function(endQuery) {
+                var transformationRules = [
+                    function(result) {
+                        if(result.data_type=='combobox') {
+                            result.selectionElements = [];
+                            var values = result.values.split(",");
+                            var labels = result.labels.split(",");
+                            for(var i=0;i<values.length;i++) {
+                                result.selectionElements.push({
+                                    value: values[i],
+                                    label: labels[i]
+                                });
+                            }
+                        }
+                        return result;
+                    }
+                ];
                 connection.query(
                         'select * from schema_and_translation where table_name = \'' + params.tableName + '\' ',
                         function(result) {
                             response.schema.push(result);
                         },
                         params.errorHandler,
-                        endQuery);
+                        endQuery,transformationRules);
             },
             getData: function(endQuery) {
                 var orderByString = '';
@@ -163,4 +179,4 @@ exports.dataDao = function() {
         }
     };
     return returnValue;
-}
+};
