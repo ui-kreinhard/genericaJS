@@ -1,0 +1,16 @@
+
+<body ng-controller="loginController">
+    <legend>autoform</legend>  
+        <form 
+             class="form-horizontal"
+              ng-submit="submit()"
+         >
+	    <label>Username:</label>
+	    <input type="text" ng-model="loginModel.username"/>
+	    <label>Password:</label>
+	    <input type="password" ng-model="loginModel.password"/>
+            <input type="submit" value="login"></input>
+        </form>              
+
+        
+</body>
