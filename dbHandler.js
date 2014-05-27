@@ -1,7 +1,13 @@
-exports.dbHandler = function(connectionString, errorHandler, successHandler) {
+var config = require('./config.js').config();
+
+
+exports.dbHandler = function(username, password, errorHandler, successHandler) {
+    var connectionString = "postgres://" + username + ":" + password + "@" + config.db.hostname +":" + config.db.port + "/" + config.db.dbName;
+    console.log(connectionString);
     var pg = require('pg');
     var client = new pg.Client(connectionString);
     client.connect(function(err, client, done) {
+	console.log(err);
         if(err) {
             client.end();
             errorHandler(err);

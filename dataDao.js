@@ -1,15 +1,5 @@
-var dbHandler = require('./dbHandler.js');
-var config = require('./config.js').config();
 
-var conString = "postgres://" + config.db.username + ":" + config.db.password + "@localhost:" + config.db.port + "/" + config.db.dbName;
-var connection = dbHandler.dbHandler(conString,
-        function() {
-
-        }, function() {
-
-}
-);
-exports.dataDao = function() {
+exports.dataDao = function(connection) {
     var getFilter =  function(params) {
                 var filter = ' WHERE 1=1 ';
                  if(params.filter) {

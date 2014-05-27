@@ -20,9 +20,11 @@ app.config(function($routeProvider) {
             {
                 controller: 'autoFormController',
                 templateUrl: 'autoForm.html'
-            });
+            }).
+	    when('/login',
+	    {
+		controller: 'loginController',
+		templateUrl: 'login.html'
+	    });
 });
 
-app.controller('helloWorldController', function($scope) {
-    // do nothin' 
-});
