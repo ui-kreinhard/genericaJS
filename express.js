@@ -11,10 +11,22 @@ var connection = dbHandler.dbHandler(config.db.username, config.db.password,
 
 var dataDao = require('./dataDao.js').dataDao(connection);
 
+
+
 var express = require('express');
 var url = require('url');
 var app = express();
 var router = express.Router();
+
+var cookieParser = require('cookie-parser')
+var session      = require('express-session')
+
+
+app.use(cookieParser()) // required before session.
+app.use(session({
+    secret: 'keyboard cat'
+  , proxy: true // if you do SSL outside of node.
+}))
 
 app.use('/view', express.static(__dirname + '/view'));
 var bodyParser = require('body-parser');
@@ -28,9 +40,21 @@ app.use(bodyParser.json({ type: 'application/json' }));
 app.post('/login', function(req,res) {
    var url_parts = url.parse(req.url, true);
    var query = url_parts.query;
-    
-   query.data = req.body.data;
-   console.log(query);
+   if(!req.session.dataDao) {
+    var dbHandler = require('./dbHandler.js');
+    var config = require('./config.js').config();
+    var connection = dbHandler.dbHandler(config.db.username, config.db.password, 
+        function() {
+
+        }, function() {
+	}
+    );
+    var dataDao = require('./dataDao.js').dataDao(connection);
+    req.session.dataDao = dataDao;
+   }
+  query.data = req.body.data;
+  console.log(query);
+  res.end();
 });
 
 app.post('/insert_or_update', function(req, res) {
