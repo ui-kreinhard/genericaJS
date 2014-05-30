@@ -77,9 +77,8 @@ app.post('/login', function(req, res) {
                     res.end();
                 }
         );
-  
     }
-
+	res.end();
     
 });
 

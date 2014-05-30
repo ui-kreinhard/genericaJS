@@ -1,11 +1,8 @@
-app.controller('loginController', function($scope, $http, $routeParams) {
+app.controller('loginController', function($scope, $http, $routeParams, $location) {
     $scope.loginModel = {
-    	username: '',
-	password: ''
-    };
-    var httpParameters = {
-        tableName: $routeParams.viewName
-
+        username: '',
+        password: '',
+        authFailed: false
     };
 
     $scope.submit = function() {
@@ -20,11 +17,13 @@ app.controller('loginController', function($scope, $http, $routeParams) {
         }).
                 success(
                 function(data, status, headers, config) {
-
+                    $scope.loginModel.authFailed = false;
+                    $location.path('/welcome');
                 }).
                 error(function(data, status, headers, config) {
-            console.log(status);
-        });
+                    $scope.loginModel.authFailed = true;
+                }
+        );
     };
 });
 

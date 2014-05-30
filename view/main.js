@@ -21,6 +21,9 @@ app.config(function($routeProvider) {
                 controller: 'autoFormController',
                 templateUrl: 'autoForm.html'
             }).
+            when('/welcome', {
+                templateUrl: 'welcome.html'
+            }).
 	    when('/login',
 	    {
 		controller: 'loginController',

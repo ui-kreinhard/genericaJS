@@ -1,6 +1,9 @@
 
 <body ng-controller="loginController">
     <legend>autoform</legend>  
+    <div ng-show="loginModel.authFailed">
+        Username or password wrong
+    </div>
         <form 
              class="form-horizontal"
               ng-submit="submit()"

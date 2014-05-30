@@ -9,7 +9,7 @@ exports.dbHandler = function(username, password, errorHandler, successHandler) {
     client.connect(function(err, client, done) {
 	console.log(err);
         if(err) {
-            client.end();
+            
             errorHandler(err);
         } else {
             successHandler();   
