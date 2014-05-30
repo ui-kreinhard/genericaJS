@@ -42,10 +42,18 @@ app.use(bodyParser());
 app.use(bodyParser.json({type: 'application/json'}));
 
 app.use(function(req, res, next) {
-    if (req.sessionID) {
-        req.dataDao = dataDaoHandler.get(req.sessionID);
+    if(req.originalUrl == '/login') {
+        next();
+        return;
     }
-    next();
+    if (req.sessionID && dataDaoHandler.get(req.sessionID)) {
+        req.dataDao = dataDaoHandler.get(req.sessionID);
+    	next();
+        return;
+    }
+    // unauthorized access
+    res.statusCode = 401;
+	res.send();
 });
 
 
@@ -61,15 +69,18 @@ app.post('/login', function(req, res) {
         var config = require('./config.js').config();
         var connection = dbHandler.dbHandler(username, password,
                 function() {
-
+                    res.statusCode = 401;
+	                res.send();
                 }, function() {
-        }
+                    var dataDao = require('./dataDao.js').dataDao(connection);
+                    dataDaoHandler.add(sessionID, dataDao);
+                    res.end();
+                }
         );
-        var dataDao = require('./dataDao.js').dataDao(connection);
-        dataDaoHandler.add(sessionID, dataDao);
+  
     }
 
-    res.end();
+    
 });
 
 app.post('/insert_or_update', function(req, res) {
