@@ -27,6 +27,11 @@ app.config(function($routeProvider) {
             {
                 controller: 'loginController',
                 templateUrl: 'login.html'
-            });
+            }).
+	    when('/logout', 
+	    {
+		controller: 'logoutController',
+		templateUrl: 'logout.html'
+	    });
 });
 

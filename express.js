@@ -42,7 +42,8 @@ app.use(bodyParser());
 app.use(bodyParser.json({type: 'application/json'}));
 
 app.use(function(req, res, next) {
-    if(req.originalUrl == '/login' || req.originalUrl.indexOf('/view')==0) {
+	
+    if(req.originalUrl=='/logout'||req.originalUrl == '/login' || req.originalUrl.indexOf('/view')==0 ) {
         next();
         return;
     }
@@ -56,6 +57,12 @@ app.use(function(req, res, next) {
 	res.send();
 });
 
+
+app.get('/logout', function(req,res) {
+	dataDaoHandler.remove(req.sessionID);
+	req.session.destroy();
+	res.end();
+});
 
 app.post('/login', function(req, res) {
     var url_parts = url.parse(req.url, true);
