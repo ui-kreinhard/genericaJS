@@ -42,7 +42,7 @@ app.use(bodyParser());
 app.use(bodyParser.json({type: 'application/json'}));
 
 app.use(function(req, res, next) {
-    if(req.originalUrl == '/login') {
+    if(req.originalUrl == '/login' || req.originalUrl.indexOf('/view')==0) {
         next();
         return;
     }
@@ -70,7 +70,7 @@ app.post('/login', function(req, res) {
         var connection = dbHandler.dbHandler(username, password,
                 function() {
                     res.statusCode = 401;
-	                res.send();
+	                res.end();
                 }, function() {
                     var dataDao = require('./dataDao.js').dataDao(connection);
                     dataDaoHandler.add(sessionID, dataDao);
@@ -78,7 +78,7 @@ app.post('/login', function(req, res) {
                 }
         );
     }
-	res.end();
+
     
 });
 
