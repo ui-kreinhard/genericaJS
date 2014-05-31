@@ -1,8 +1,7 @@
 exports.config = function() {
   return {
     db: {
-        username: '',
-        password: '',
+	hostname: '',
         dbName: '',
         port: '5432'
     }  
