@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html ng-app="generica">
+    <head lang="en">
+        <meta charset="utf-8">
+        <link rel="stylesheet" type="text/css" href="css/ng-grid.css" />
+        <link rel="stylesheet" type="text/css" href="css/style.css" />
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/font-awesome.min.css">
+
+        <script src="libs/jquery.min.js"></script>
+        <script src="libs/angular.min.js"></script>
+        <script src="libs/ng-grid.js"></script>        
+        <script type="text/javascript" src="libs/angular-route.js"></script>
+        <script type="text/javascript" src="libs/angular-resource.js"></script>
+
+
+        <script type="text/javascript" src="main.js"></script>
+        <script type="text/javascript" src="routing.js"></script>
+        <script type="text/javascript" src="tableview.js"></script>
+
+        <script type="text/javascript" src="autoFormController.js"></script>    
+        <script type="text/javascript" src="loginController.js"></script>    
+        <script type="text/javascript" src="logoutController.js"></script>    
+	<script type="text/javascript" src="tableActionsController.js"></script>
+
+        <script src="bower_components/angular-strap/dist/angular-strap.min.js"></script>
+        <script src="bower_components/angular-strap/dist/angular-strap.tpl.min.js"></script>
+
+	<script type="text/javascript" src="menuController.js"></script>
+    </head>
+    <body>
+	<table ng-controller="menuController" class="form-horizontal"
+>
+		<tr>
+                <td ng-repeat="menuItem in menuItems">
+			<span ng-if="menuItem.hasNoLink()">
+			<button type="button" class="btn " data-animation="am-flip-x" bs-dropdown="menuItem.children">
+				{{menuItem.menulabel}}
+			</button>
+			</span>
+			<span ng-if="menuItem.hasLink()">
+                        <button type="button" class="btn " data-animation="am-flip-x">
+                                <a href="{{menuItem.link}}">{{menuItem.menulabel}}</a>
+                        </button>
+			</span>
+		</td>
+		</tr>
+	</table>
+        <div ng-view>
+
+        </div>
+    </body>
+</html>
