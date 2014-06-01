@@ -2,6 +2,7 @@ app.controller('gridController', function($scope, $http, $routeParams) {
     var columns = [];
     var rowData = [];
     var viewName = $routeParams.viewName;
+    $scope.viewName = viewName;
     $scope.totalServerItems = 0;
     $scope.pagingOptions = {
         pageSizes: [10, 20, 50, 100],

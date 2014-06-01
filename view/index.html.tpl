@@ -2,6 +2,7 @@
 <html ng-app="generica">
     <head lang="en">
         <meta charset="utf-8">
+        <title>Custom Plunker</title>  
         <link rel="stylesheet" type="text/css" href="css/ng-grid.css" />
         <link rel="stylesheet" type="text/css" href="css/style.css" />
         <link rel="stylesheet" href="css/bootstrap.min.css">
@@ -21,7 +22,7 @@
         <script type="text/javascript" src="autoFormController.js"></script>    
         <script type="text/javascript" src="loginController.js"></script>    
         <script type="text/javascript" src="logoutController.js"></script>    
-	<script type="text/javascript" src="tableActionsController.js"></script>
+
 
         <script src="bower_components/angular-strap/dist/angular-strap.min.js"></script>
         <script src="bower_components/angular-strap/dist/angular-strap.tpl.min.js"></script>
@@ -29,8 +30,6 @@
 
     </head>
     <body>
-        <a href="#table/worktimes">show table</a>
-        <a href="#hello">show table</a>
         <div ng-view>
 
         </div>

@@ -32,6 +32,11 @@ app.config(function($routeProvider) {
 	    {
 		controller: 'logoutController',
 		templateUrl: 'logout.html'
-	    });
+	    }).
+	     when('/table_crud/:viewName',
+            {
+                templateUrl: 'tableviewCrud.html',
+                controller: 'gridController'
+            });
 });
 
