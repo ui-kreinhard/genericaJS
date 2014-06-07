@@ -1,5 +1,4 @@
 
-var dbHandler = require('./dbHandler.js');
 var config = require('./config.js').config();
 
 var dataDaoHandler = function() {

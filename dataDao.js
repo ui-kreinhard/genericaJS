@@ -32,6 +32,7 @@ exports.dataDao = function(connection) {
                 }
                 return offset;
             };
+
     var localFunctions = function(params, response) {
         return {
           
