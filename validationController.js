@@ -1,5 +1,5 @@
 
-exports.validatonController = function(dataDao) {
+exports.validatonController = function(dataDao, connection) {
 	var privateMethods = {
 		encloseInTicks: function(stringToBeTicked) {
 			return "'" + stringToBeTicked + "'";
@@ -63,9 +63,13 @@ exports.validatonController = function(dataDao) {
 				var sql = privateMethods.createCheckSQL(response.data, values)();
 				console.log(sql);
 				// fire sql
-				var resultOfValidation;
-				successHandler(resultOfValidation);
-			}, errorHandler, endQuery)
+				var result = [];
+				var resultOfValidation = connection.query(sql, function(resultRow) {
+					result.push(resultRow);
+				}, errorHandler, function() {
+					successHandler(result);
+				});
+			}, errorHandler)
 		}
 
 	};
