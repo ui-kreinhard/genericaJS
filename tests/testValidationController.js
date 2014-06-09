@@ -13,6 +13,10 @@ var dbHandler = connection.dbHandler(username, password, function() {
 			date_start: '2013',
 			date_end: '2012'
 		}
+	}, function() {
+		console.log('error');
+	}, function() {
+		console.log('end')
 	});
 });
 

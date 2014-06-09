@@ -95,12 +95,18 @@ exports.dataDao = function(connection) {
 
     var returnValue = {
         insertOrUpdateRecord: function(params) {
+            var validatonController = require('./validationController.js').validatonController(this);    
+            
             var dataToInsert = params.data;
             var tableName = params.tableName;
             var response = {
                 schema: [],
                 data: []
             };
+            validatonController.validate({
+               tableName: tableName,
+               values: dataToInsert
+            });
             var local = localFunctions(params, response);
             local.getSchema(function(response) {
                 var queryString = 'select 1';

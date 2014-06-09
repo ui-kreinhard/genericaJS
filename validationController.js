@@ -55,14 +55,17 @@ exports.validatonController = function(dataDao) {
 	};
 
 	return {
-		validate: function(dataToBeValidated) {
+		validate: function(dataToBeValidated,successHandler, errorHandler, endQuery) {
 			var values = dataToBeValidated.values;
 			var tableName = dataToBeValidated.tableName;
 			privateMethods.readOutValidations(tableName, function(response) {
 				console.log(response);
 				var sql = privateMethods.createCheckSQL(response.data, values)();
 				console.log(sql);
-			});
+				// fire sql
+				var resultOfValidation;
+				successHandler(resultOfValidation);
+			}, errorHandler, endQuery)
 		}
 
 	};
