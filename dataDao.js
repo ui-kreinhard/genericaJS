@@ -1,5 +1,7 @@
 
 exports.dataDao = function(connection) {
+    var validatonController = require('./validationController.js').validatonController(this, connection);    
+
     var getFilter =  function(params) {
                 var filter = ' WHERE 1=1 ';
                  if(params.filter) {
@@ -92,11 +94,9 @@ exports.dataDao = function(connection) {
         };
     }
 
-
     var returnValue = {
         insertOrUpdateRecord: function(params) {
-            var validatonController = require('./validationController.js').validatonController(this);    
-            
+            var validatonController = require('./validationController.js').validatonController(this, connection);    
             var dataToInsert = params.data;
             var tableName = params.tableName;
             var response = {
@@ -106,8 +106,8 @@ exports.dataDao = function(connection) {
             validatonController.validate({
                tableName: tableName,
                values: dataToInsert
-            });
-            var local = localFunctions(params, response);
+            }, function(result) {
+			    var local = localFunctions(params, response);
             local.getSchema(function(response) {
                 var queryString = 'select 1';
                 
@@ -147,6 +147,10 @@ exports.dataDao = function(connection) {
                 }
                 connection.query(queryString, function() {}, params.errorHandler, params.successHandler);
             });
+			}, function(err) {
+				params.validationErrorHandler(err);
+		   });
+        
             
         },
         readOutSchemaData: function(params) {

@@ -66,8 +66,22 @@ exports.validatonController = function(dataDao, connection) {
 				var result = [];
 				var resultOfValidation = connection.query(sql, function(resultRow) {
 					result.push(resultRow);
-				}, errorHandler, function() {
-					successHandler(result);
+				}, errorHandler,
+				function() {
+					var isOk = true;
+					for(var i=0;i<result.length;i++) {
+						var resultElement = result[i];
+						if(resultElement.check==0) {
+							isOk = false;
+							break;
+						}
+					}
+					if(isOk) {
+						successHandler(result);	
+					} else {
+						errorHandler(result);
+					}
+					
 				});
 			}, errorHandler)
 		}
