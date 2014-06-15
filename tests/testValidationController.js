@@ -15,6 +15,8 @@ var dbHandler = connection.dbHandler(username, password, function() {
 		}
 	}, function(result) {
 		console.log(result);
+	}, function(err) {
+		console.log(err);
 	}
 	);
 });
