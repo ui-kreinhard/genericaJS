@@ -11,10 +11,24 @@ app.factory('authHttpInterceptor', function($q, $location) {
         },
         'responseError': function(rejection) {
             // prevent redirect loop
-            if ($location.$$url != '/login') {
-                $location.path('/login');
-            }
-            return $q.reject(rejection);
+	    console.log($q);
+	    console.log($location);
+	    switch(rejection.status) {
+		case 412:
+                return $q.reject(rejection);
+		break;
+		case 401:
+		case 403:
+                if ($location.$$url != '/login') {
+                	$location.path('/login');
+		}
+		return; 
+		break;
+		default:
+            	return $q.reject(rejection);
+		break;
+	    }
+
         }
     };
 }).config(function($provide, $httpProvider) {

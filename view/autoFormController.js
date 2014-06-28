@@ -1,5 +1,11 @@
 app.controller('autoFormController', function($scope, $http, $routeParams) {
     $scope.model = {};
+    $scope.errors = {
+	errorList: [],
+	hasErrors: function() {
+		return errorList.length > 0;
+	}	
+    };
     var httpParameters = {
         tableName: $routeParams.viewName
 
@@ -12,7 +18,7 @@ app.controller('autoFormController', function($scope, $http, $routeParams) {
         },
         url: '../formdata'
     }).
-            success(
+    success(
             function(data, status, headers, config) {
                 rowData = [];
                 columns = [];
@@ -28,7 +34,7 @@ app.controller('autoFormController', function($scope, $http, $routeParams) {
                 }
             }).
             error(function(data, status, headers, config) {
-        console.log(status);
+		$scope.errors.errorList = data.errors;
     });
 
 
@@ -42,12 +48,11 @@ app.controller('autoFormController', function($scope, $http, $routeParams) {
             },
             url: '../insert_or_update'
         }).
-                success(
-                function(data, status, headers, config) {
+        success(function(data, status, headers, config) {
 
-                }).
-                error(function(data, status, headers, config) {
-            console.log(status);
+        }).
+        error(function(data, status, headers, config) {
+            $scope.errors.errorList = data.errors;
         });
     };
 });

@@ -108,10 +108,12 @@ app.post('/insert_or_update', function(req, res) {
         res.statusCode = 200;
         res.send(response);
     };
-	query.validationErrorHandler = function(response) {
-		res.statusCode = 412;
-        res.send(response);
-	};
+    query.validationErrorHandler = function(response) {
+	res.statusCode = 412;
+        res.send({
+		errors: response
+	});
+    };
     dataDao.insertOrUpdateRecord(query);
 }
 );
