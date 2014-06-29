@@ -18,6 +18,7 @@ exports.validatonController = function(dataDao, connection) {
 			for(var i=0;i<rawCheckConditions.length;i++) {
 				var singleValue = rawCheckConditions[i];
 				values.push({
+					errorMessage: singleValue.error_msg,
 					columnName: singleValue.column_name,
 					value: valuesP[singleValue.column_name],
 					checkCondition: singleValue.check_clause,
@@ -26,7 +27,7 @@ exports.validatonController = function(dataDao, connection) {
                                                 return returnStr;
                                         },
                                         createSelectPart: function() {
-                                                var returnStr = 'select count(*) as is_error, ' + privateMethods.encloseInTicks(this.columnName) + ' as column_to_check from ' + 'to_check ' + ' where ' + this.checkCondition;
+                                                var returnStr = 'select count(*) as is_error, ' + privateMethods.encloseInTicks(this.columnName) + ' as column_to_check,' + privateMethods.encloseInTicks(this.errorMessage) + ' as errorMessage'  +' from ' + 'to_check ' + ' where ' + this.checkCondition;
                                                 return returnStr;
                                         }
 				});
@@ -44,7 +45,7 @@ exports.validatonController = function(dataDao, connection) {
 				returnStr += ') ';
 				
 				// create selects
-				returnStr += "select 1 as check, 'columName' as column_to_check where 1<>1";
+				returnStr += "select 1 as check, 'columName' as column_to_check, 'dummy error' as errorMessage where 1<>1";
 				for(var i=0;i<values.length;i++) {
 					var singleValue = values[i];
 					returnStr += ' union all ' + singleValue.createSelectPart();	

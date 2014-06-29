@@ -1,6 +1,12 @@
 
 <body ng-controller="gridController">
     <legend>autoform</legend>  
+    <div ng-show="errors.hasErrors()" class="alert alert-danger" style="width: 25%">
+	<div ng-repeat="error in errors.errorList">
+           {{error.errormessage}}   
+        </div>
+    </div>
+
         <form 
              class="form-horizontal"
               ng-submit="submit()"
