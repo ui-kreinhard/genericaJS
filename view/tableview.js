@@ -1,4 +1,6 @@
 app.controller('gridController', function($scope, $http, $routeParams) {
+    var selectionChangedListeners = [];
+
     var columns = [];
     var rowData = [];
     var viewName = $routeParams.viewName;
@@ -14,6 +16,10 @@ app.controller('gridController', function($scope, $http, $routeParams) {
         fields: [],
         directions: [],
         columns: []
+    };
+
+    $scope.addListener = function(listener) {
+	selectionChangedListeners.push(listener);
     };
 
     $scope.getPagedDataAsync = function() {
@@ -78,6 +84,13 @@ app.controller('gridController', function($scope, $http, $routeParams) {
         showFilter: true,
         sortInfo: $scope.sortOptions,
         showColumnMenu: true,
-        useExternalSorting: true
+        useExternalSorting: true,
+	afterSelectionChange: function(data) {
+		for(var i=0;i<selectionChangedListeners.length;i++) {
+			var listener = selectionChangedListeners[i];
+			listener(data.selectionProvider.selectedItems);
+		}
+        },
+	selectedItems: []
     };
 });
