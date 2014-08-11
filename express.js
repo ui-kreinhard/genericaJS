@@ -94,6 +94,7 @@ app.post('/login', function(req, res) {
     var url_parts = url.parse(req.url, true);
     var query = url_parts.query;
     query.data = req.body.data;
+	
     var username = query.data.username;
     var password = query.data.password;
     if (!dataDaoHandler.get(req.sessionID)) {
@@ -124,17 +125,24 @@ app.get('/delete', function(req, res) {
 	
 	var tableName = query.tableName;
 	var id = query.id;
-	errorHandler(req, res)(typeof tableName == 'undefined' || tableName == null,'No tablename specified' )(typeof id === 'undefined' || id==null, 'No id specified');
+	errorHandler(req, res)
+	(typeof tableName == 'undefined' || tableName == null,'No tablename specified' )
+	(typeof id === 'undefined' || id==null, 'No id specified', function() {
+		query.errorHandler = function(err) {
+        	res.statusCode = 500;
+        	console.log(err);
+        	res.send(err);
+    	};
+    	query.successHandler = function(response) {
+        	res.statusCode = 200;
+        	res.send(response);
+	    };
 	
-    query.errorHandler = function(err) {
-        res.statusCode = 500;
-        console.log(err);
-        res.send(err);
-    };
-    query.successHandler = function(response) {
-        res.statusCode = 200;
-        res.send(response);
-    };
+		res.statusCode = 200;
+        res.send('stub');
+	});
+	
+   
 });
 
 app.post('/insert_or_update', function(req, res) {
@@ -213,7 +221,11 @@ app.get('/readout_table', function(req, res) {
     };
 
 	var validateOrderBy = function() {
+
 		var orderByDirections;
+		if(typeof query.orderByDirection =='undefined') {
+			return false;
+		}
 		if(typeof query.orderByDirection == 'string') {
 			orderByDirections = [];
 			orderByDirections.push(query.orderByDirection);
@@ -228,8 +240,7 @@ app.get('/readout_table', function(req, res) {
 		}
 		return false;
 	};
-	console.log(query.orderBy.length);
-	console.log(query.orderByDirection.length);
+
     errorHandler(req, res)(typeof query.tableName == 'undefined' || query.tableName == null || query.tableName == '', 'No table specified')
             (!query.pageSize, 'No pageSize specified')
             (!query.page, 'No page specified')
