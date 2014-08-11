@@ -22,7 +22,7 @@ app.factory('authHttpInterceptor', function($q, $location) {
                 if ($location.$$url != '/login') {
                 	$location.path('/login');
 		}
-		return; 
+		return $q.reject(rejection); 
 		break;
 		default:
             	return $q.reject(rejection);
