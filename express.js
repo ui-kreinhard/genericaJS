@@ -25,17 +25,29 @@ var router = express.Router();
 
 
 var errorHandler = function(req,res) {
+	
 	var noneHandler = function(cmp, errorMessage) {
         return noneHandler;
     };
-	return function(cmp, errorMessage) {
-     if (cmp) {
+	return function(cmp, errorMessage, successHandler) {
+	 var resultOfCheck;
+	 if(typeof cmp == 'function') {
+		 resultOfCheck = cmp();
+	 } else {
+		 resultOfCheck = cmp;
+	 }
+     if (resultOfCheck) {
          res.statusCode = 500;
          console.log(errorMessage);
          res.send(errorMessage);
+	//	 res.end();
          return noneHandler;
+     } else {
+		 if( successHandler && typeof successHandler == 'function') {
+			 successHandler();
+		 }
      }
-     return errorHandler;
+     return errorHandler(req,res);
     }
 }
 
@@ -104,15 +116,25 @@ app.post('/login', function(req, res) {
 });
 
 app.get('/delete', function(req, res) {
+	var dataDao = req.dataDao;
 	var url = require('url');
     console.log(req.session);
     var url_parts = url.parse(req.url, true);
     var query = url_parts.query;
 	
-	var tableName = query.table;
+	var tableName = query.tableName;
 	var id = query.id;
 	errorHandler(req, res)(typeof tableName == 'undefined' || tableName == null,'No tablename specified' )(typeof id === 'undefined' || id==null, 'No id specified');
 	
+    query.errorHandler = function(err) {
+        res.statusCode = 500;
+        console.log(err);
+        res.send(err);
+    };
+    query.successHandler = function(response) {
+        res.statusCode = 200;
+        res.send(response);
+    };
 });
 
 app.post('/insert_or_update', function(req, res) {
@@ -189,26 +211,31 @@ app.get('/readout_table', function(req, res) {
         res.statusCode = 200;
         res.send(response);
     };
+
+	var validateOrderBy = function() {
+		var orderByDirections;
+		if(typeof query.orderByDirection == 'string') {
+			orderByDirections = [];
+			orderByDirections.push(query.orderByDirection);
+		} else {
+			orderBy = query.orderByDirection;
+		}
+		
+		for (var i = 0; i < orderByDirections.length; i++) {
+			if (orderByDirections[i].toLowerCase() != 'asc' && orderByDirections[i].toLowerCase() != 'desc') {
+				return true;
+			}
+		}
+		return false;
+	};
+	console.log(query.orderBy.length);
+	console.log(query.orderByDirection.length);
     errorHandler(req, res)(typeof query.tableName == 'undefined' || query.tableName == null || query.tableName == '', 'No table specified')
             (!query.pageSize, 'No pageSize specified')
-            (!query.page, 'No page specified');
-
-    if (query.orderBy) {
-        if (query.orderByDirection) {
-            if (typeof query.orderBy != 'string' && typeof query.orderByDirection != 'string') {
-                if (query.orderBy.length != query.orderByDirection.length) {
-                    errorHandler(true, 'order direction do not match length of orderBy length');
-                } else {
-                    for (var i = 0; i < query.orderByDirection.length; i++) {
-                        if (query.orderByDirection[i].toLowerCase() != 'asc' && query.orderByDirection[i].toLowerCase() != 'desc') {
-                            errorHandler(true, 'invalid direction');
-                        }
-                    }
-                }
-            }
-        }
-    }
-    dataDao.readOutTable(query);
+            (!query.page, 'No page specified')
+			(validateOrderBy,'invalid direction', function() {
+				dataDao.readOutTable(query);
+			});
 });
 
 var server = app.listen(8082, function() {
