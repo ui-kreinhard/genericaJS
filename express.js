@@ -24,6 +24,21 @@ var app = express();
 var router = express.Router();
 
 
+var errorHandler = function(req,res) {
+	var noneHandler = function(cmp, errorMessage) {
+        return noneHandler;
+    };
+	return function(cmp, errorMessage) {
+     if (cmp) {
+         res.statusCode = 500;
+         console.log(errorMessage);
+         res.send(errorMessage);
+         return noneHandler;
+     }
+     return errorHandler;
+    }
+}
+
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
 app.use(cookieParser()); 
@@ -88,6 +103,18 @@ app.post('/login', function(req, res) {
     
 });
 
+app.get('/delete', function(req, res) {
+	var url = require('url');
+    console.log(req.session);
+    var url_parts = url.parse(req.url, true);
+    var query = url_parts.query;
+	
+	var tableName = query.table;
+	var id = query.id;
+	errorHandler(req, res)(typeof tableName == 'undefined' || tableName == null,'No tablename specified' )(typeof id === 'undefined' || id==null, 'No id specified');
+	
+});
+
 app.post('/insert_or_update', function(req, res) {
     var dataDao = req.dataDao;
 
@@ -140,7 +167,6 @@ app.get('/formdata', function(req, res) {
     query.filter = {
         id: query.id
     };
-    //dataDao.readOutSchemaData(query);
     dataDao.readOutTable(query)
 });
 
@@ -151,18 +177,8 @@ app.get('/readout_table', function(req, res) {
     console.log(req.session);
     var url_parts = url.parse(req.url, true);
     var query = url_parts.query;
-    var noneHandler = function(cmp, errorMessage) {
-        return noneHandler;
-    }
-    var errorHandler = function(cmp, errorMessage) {
-        if (cmp) {
-            res.statusCode = 500;
-            console.log(errorMessage);
-            res.send(errorMessage);
-            return noneHandler;
-        }
-        return errorHandler;
-    }
+    
+ 
 
     query.errorHandler = function(err) {
         res.statusCode = 500;
@@ -173,7 +189,7 @@ app.get('/readout_table', function(req, res) {
         res.statusCode = 200;
         res.send(response);
     };
-    errorHandler(typeof query.tableName == 'undefined' || query.tableName == null || query.tableName == '', 'No table specified')
+    errorHandler(req, res)(typeof query.tableName == 'undefined' || query.tableName == null || query.tableName == '', 'No table specified')
             (!query.pageSize, 'No pageSize specified')
             (!query.page, 'No page specified');
 
