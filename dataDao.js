@@ -114,7 +114,7 @@ exports.dataDao = function(connection) {
 								var dummyObject = {};
 								for(var i=0;i<response.schema.length;i++) {
 									var schemaElement = response.schema[i];
-									dummyObject[schemaElement.field] = "";
+									dummyObject[schemaElement.field] = null;
 								}
 								dummyObject[response.schema[0].field] = "No data to show";
                             	response.data.push(dummyObject);
@@ -149,13 +149,13 @@ exports.dataDao = function(connection) {
                 var values = [];
                 for(var attributename in dataToInsert){
                      var value = dataToInsert[attributename];
-             
-                        columns.push('"'+ attributename + '"');
-                        values.push("'" + value + "'");
-             
+             		 if(value!=null) {
+					  	 columns.push('"'+ attributename + '"');
+						 values.push("'" + value + "'");
+					 }
                 }
                 // recognize if we have an id - if so, it has to be an update
-                if (typeof dataToInsert.id !== 'undefined' && dataToInsert.id !== null){
+                if (typeof dataToInsert.id !== 'undefined' && dataToInsert.id !== null && dataToInsert.id !=''){
                   queryString = 'UPDATE ' + tableName + ' SET '
                   var whereCondition = ' where id=';
                   var called = false;
