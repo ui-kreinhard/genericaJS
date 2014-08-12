@@ -87,7 +87,19 @@ exports.dataDao = function(connection) {
                             response.data.push(result);
                         },
                         params.errorHandler,
-                        endQuery
+						function() {
+							if(response.data.length <= 0) {
+								var dummyObject = {};
+								for(var i=0;i<response.schema.length;i++) {
+									var schemaElement = response.schema[i];
+									dummyObject[schemaElement.field] = "";
+								}
+								dummyObject[response.schema[0].field] = "No data to show";
+                            	response.data.push(dummyObject);
+							}
+							endQuery();
+						}
+                        
                 );
             }
 
