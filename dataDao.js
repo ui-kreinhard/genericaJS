@@ -49,6 +49,28 @@ exports.dataDao = function(connection) {
                         }
                 );
             },
+			getRights: function(endQuery) {
+				response.rights = {canRead: false, canInsert: false, canUpdate: false, canDelete: false};
+				connection.query("select * from table_rigths where table_name = '" + params.tableName + "'",
+                        function(result) {
+							if(result.priv=='SELECT') {
+								response.rights.canRead = true;
+							}
+							if(result.priv=='INSERT') {
+								response.rights.canInsert = true;
+							}
+							if(result.priv=='UPDATE') {
+								response.rights.canUpdate = true;
+							}
+							if(result.priv=='DELETE') {
+								response.rights.canDelete = true;
+							}
+                            
+                        },
+                        params.errorHandler,
+                        endQuery
+                );
+			},
             getSchema: function(endQuery) {
                 var transformationRules = [
                     function(result) {
@@ -182,13 +204,15 @@ exports.dataDao = function(connection) {
                 data: []
             };
             var local = localFunctions(params, response);
-            local.getSchema(
-                    function() {
-                        local.getData(function() {
-                            local.getCount();
-                        });
-                    }
-            );
+			local.getRights(function() {
+				local.getSchema(
+						function() {
+							local.getData(function() {
+								local.getCount();
+							});
+						}
+				);
+			});
         }
     };
     return returnValue;

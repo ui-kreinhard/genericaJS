@@ -4,6 +4,7 @@ app.controller('gridController', function($scope, $http, $routeParams) {
     var columns = [];
     var rowData = [];
     var viewName = $routeParams.viewName;
+    $scope.rights = {};
     $scope.viewName = viewName;
     $scope.totalServerItems = 0;
     $scope.pagingOptions = {
@@ -11,6 +12,12 @@ app.controller('gridController', function($scope, $http, $routeParams) {
         pageSize: 20,
         currentPage: 1
     };
+    
+    var editUrlTemplate= '#autoform/' + viewName + '/';
+    var createUrlTemplate = '#autoform/' + viewName + '/';
+    var deleteUrlTemplate = '#autoform/delete/' + viewName + '/';
+
+    $scope.createUrl = createUrlTemplate; 
 
     $scope.sortOptions = {
         fields: [],
@@ -18,9 +25,15 @@ app.controller('gridController', function($scope, $http, $routeParams) {
         columns: []
     };
 
-    $scope.addListener = function(listener) {
+    var addListener = function(listener) {
 	selectionChangedListeners.push(listener);
     };
+
+    addListener(function(selectedItem) {
+	$scope.editUrl = editUrlTemplate + selectedItem[0].id;
+	$scope.createUrl = createUrlTemplate;
+	$scope.deleteUrl = deleteUrlTemplate + selectedItem[0].id;	
+    });
 
     $scope.getPagedDataAsync = function() {
         var httpParameters = {
@@ -41,6 +54,7 @@ app.controller('gridController', function($scope, $http, $routeParams) {
                     columns = [];
                     columns = data.schema;
                     $scope.totalServerItems = data.dataCount;
+		    $scope.rights = data.rights;
                     angular.forEach(data.data, function(value, key) {
                         var singleRow = {};
                         angular.forEach(value, function(singleElement, elementKey) {
@@ -77,6 +91,7 @@ app.controller('gridController', function($scope, $http, $routeParams) {
         data: 'rowData',
         totalServerItems: 'totalServerItems',
         columnDefs: $scope.columns,
+	keepLastSelected: false,
         columns: $scope.columns,
         pagingOptions: $scope.pagingOptions,
         enablePaging: true,

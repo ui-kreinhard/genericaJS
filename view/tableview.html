@@ -1,4 +1,9 @@
-
     <body ng-controller="gridController">
-        <div class="gridStyle" ng-grid="gridOptions"></div>
+	<div>
+		<a ng-show="rights.canInsert" ng-href="{{createUrl}}">Create</a> 
+		<a ng-show="rights.canUpdate" href="{{editUrl}}">Edit</a>
+		<a ng-show="rights.canDelete" href="{{deleteUrl}}">Delete</a>
+	</div>
+
+        <div ng-show="rights.canRead" class="gridStyle" ng-grid="gridOptions"></div>
     </body>
