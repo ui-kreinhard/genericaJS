@@ -4,7 +4,12 @@ app.controller('gridController', function($scope, $http, $routeParams) {
     var columns = [];
     var rowData = [];
     var viewName = $routeParams.viewName;
-    $scope.rights = {};
+    $scope.rights = {
+	canDelete: false,
+	canInsert: false,
+	canRead: false,
+	canUpdate: false
+    };
     $scope.viewName = viewName;
     $scope.totalServerItems = 0;
     $scope.pagingOptions = {
@@ -13,27 +18,15 @@ app.controller('gridController', function($scope, $http, $routeParams) {
         currentPage: 1
     };
     
-    var editUrlTemplate= '#autoform/' + viewName + '/';
-    var createUrlTemplate = '#autoform/' + viewName + '/';
-    var deleteUrlTemplate = '#autoform/delete/' + viewName + '/';
-
-    $scope.createUrl = createUrlTemplate; 
-
     $scope.sortOptions = {
         fields: [],
         directions: [],
         columns: []
     };
 
-    var addListener = function(listener) {
+    $scope.addListener = function(listener) {
 	selectionChangedListeners.push(listener);
     };
-
-    addListener(function(selectedItem) {
-	$scope.editUrl = editUrlTemplate + selectedItem[0].id;
-	$scope.createUrl = createUrlTemplate;
-	$scope.deleteUrl = deleteUrlTemplate + selectedItem[0].id;	
-    });
 
     $scope.getPagedDataAsync = function() {
         var httpParameters = {
@@ -54,7 +47,24 @@ app.controller('gridController', function($scope, $http, $routeParams) {
                     columns = [];
                     columns = data.schema;
                     $scope.totalServerItems = data.dataCount;
-		    $scope.rights = data.rights;
+	            $scope.rights.canDelete = data.rights.canDelete;
+		    $scope.rights.canInsert = data.rights.canInsert;
+		    $scope.rights.canRead = data.rights.canRead;
+		    $scope.rights.canUpdate = data.rights.canUpdate;
+		    if(data.data.length<=0) {
+			var singleDummyRow = {};
+			var i =0;
+			angular.forEach(data.schema, function(value, key) {
+				var column = value.field;
+				if(i==0) {
+					singleDummyRow[column] = 'No Records found';
+					i = 1;
+				} else {
+					singleDummyRow[column] = '';
+				}
+			});
+			rowData.push(singleDummyRow);
+		    }
                     angular.forEach(data.data, function(value, key) {
                         var singleRow = {};
                         angular.forEach(value, function(singleElement, elementKey) {

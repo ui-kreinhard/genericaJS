@@ -116,18 +116,20 @@ app.post('/login', function(req, res) {
     
 });
 
-app.get('/delete', function(req, res) {
+app.post('/delete', function(req, res) {
 	var dataDao = req.dataDao;
 	var url = require('url');
     console.log(req.session);
     var url_parts = url.parse(req.url, true);
     var query = url_parts.query;
 	
-	var tableName = query.tableName;
-	var id = query.id;
+	var tableName = req.body.tableName;
+	var id = req.body.id;
 	errorHandler(req, res)
 	(typeof tableName == 'undefined' || tableName == null,'No tablename specified' )
 	(typeof id === 'undefined' || id==null, 'No id specified', function() {
+		query.id = id;
+		query.tableName = tableName;
 		query.errorHandler = function(err) {
         	res.statusCode = 500;
         	console.log(err);
@@ -137,9 +139,7 @@ app.get('/delete', function(req, res) {
         	res.statusCode = 200;
         	res.send(response);
 	    };
-	
-		res.statusCode = 200;
-        res.send('stub');
+		dataDao.deleteRecord(query);
 	});
 	
    

@@ -37,7 +37,15 @@ exports.dataDao = function(connection) {
 
     var localFunctions = function(params, response) {
         return {
-          
+          	deleteRecord: function(endQuery) {
+						connection.query("delete from " + params.tableName + " where id IN (" + params.id.join() + ')',
+                        function(result) {
+					
+                        },
+                        params.errorHandler,
+                        endQuery
+                );
+			},
             getCount: function() {
                 connection.query('select count(*) as "dataCount" from ' + params.tableName + getFilter(params) ,
                         function(result) {
@@ -110,15 +118,7 @@ exports.dataDao = function(connection) {
                         },
                         params.errorHandler,
 						function() {
-							if(response.data.length <= 0) {
-								var dummyObject = {};
-								for(var i=0;i<response.schema.length;i++) {
-									var schemaElement = response.schema[i];
-									dummyObject[schemaElement.field] = null;
-								}
-								dummyObject[response.schema[0].field] = "No data to show";
-                            	response.data.push(dummyObject);
-							}
+							
 							endQuery();
 						}
                         
@@ -129,6 +129,13 @@ exports.dataDao = function(connection) {
     }
 
     var returnValue = {
+		deleteRecord: function(params) {
+			var local = localFunctions(params, response);
+			var response = {};
+			local.deleteRecord(function() {
+                  params.successHandler(response);
+            });
+		},
         insertOrUpdateRecord: function(params) {
             var validatonController = require('./validationController.js').validatonController(this, connection);    
             var dataToInsert = params.data;

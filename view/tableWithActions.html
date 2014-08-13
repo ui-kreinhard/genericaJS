@@ -1,6 +1,7 @@
- <div>
+ <div 
+    ng-controller="tableActionsController">
         <a ng-show="rights.canInsert" ng-href="{{createUrl}}">Create</a>
         <a ng-show="rights.canUpdate" href="{{editUrl}}">Edit</a>
-	<a ng-show="rights.canDelete" href="{{deleteUrl}}">Delete</a>
+        <a ng-show="rights.canDelete" ng-click="delete()">Delete</a>
 </div>
 <div class="slide-animate" ng-include="'tableview.html'"></div>
