@@ -1,4 +1,4 @@
-app.controller('tableActionsController', function($scope, $http, $routeParams) {
+app.controller('tableActionsController', function($scope, $http, $routeParams, $location) {
 	var viewName = $routeParams.viewName;
 
 	var editUrlTemplate= '#autoform/' + viewName + '/';
@@ -6,7 +6,7 @@ app.controller('tableActionsController', function($scope, $http, $routeParams) {
 	var deleteUrlTemplate = '#autoform/delete/' + viewName + '/';
 	var selectedItemIds = [];
 
-	$scope.editUrl = '#autoform/edit/';
+	$scope.editUrl = '#' + $location.path();
 	$scope.createUrl = '#autoform/' + viewName;
 	$scope.deleteUrl = '#autoform/delete';
 	$scope.rights = $scope.$parent.rights;
@@ -15,10 +15,17 @@ app.controller('tableActionsController', function($scope, $http, $routeParams) {
 		angular.forEach(selectedItems, function(value, key) {
 			selectedItemIds.push(value.id);
 		});
-	        $scope.editUrl = editUrlTemplate + selectedItems[0].id;
+		if(selectedItems.length > 0) {
+		        $scope.editUrl = editUrlTemplate + selectedItems[0].id;
+		} else {
+			$scope.editUrl = $location.path();
+		}
 	});
 
 	$scope.delete = function() {
+        if(selectedItemIds.length <= 0) {
+		return;
+	}
         $http({
             method: 'POST',
             data: {
