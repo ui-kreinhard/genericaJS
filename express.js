@@ -195,8 +195,8 @@ app.post('/delete', function(req, res) {
 	var tableName = req.body.tableName;
 	var id = req.body.id;
 	errorHandler(req, res)
-	(typeof tableName == 'undefined' || tableName == null,'No tablename specified' )
-	(typeof id === 'undefined' || id==null, 'No id specified', function() {
+	(isNotDefined(tableName),'No tablename specified' )
+	(isNotDefined(id), 'No id specified', function() {
 		query.id = id;
 		query.tableName = tableName;
 		query.errorHandler = function(err) {
@@ -310,7 +310,7 @@ app.get('/readout_table', function(req, res) {
 		return false;
 	};
 
-    errorHandler(req, res)(typeof query.tableName == 'undefined' || query.tableName == null || query.tableName == '', 'No table specified')
+    errorHandler(req, res)(isNotDefined(query.tableName) || query.tableName == '', 'No table specified')
             (!query.pageSize, 'No pageSize specified')
             (!query.page, 'No page specified')
 			(validateOrderBy,'invalid direction', function() {
