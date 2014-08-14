@@ -18,7 +18,7 @@ app.controller('tableActionsController', function($scope, $http, $routeParams, $
 		if(selectedItems.length > 0) {
 		        $scope.editUrl = editUrlTemplate + selectedItems[0].id;
 		} else {
-			$scope.editUrl = $location.path();
+			$scope.editUrl = '#' + $location.path();
 		}
 	});
 

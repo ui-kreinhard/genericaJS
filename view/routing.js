@@ -37,7 +37,17 @@ app.config(function($routeProvider) {
 		controller: 'logoutController',
 		templateUrl: 'logout.html'
 	    }).
-	     when('/table_crud/:viewName',
+	    when('/formelements_table/:viewName', 
+	    {
+		controller: 'gridController',
+		templateUrl: 'tableFormElementsOrder.html'
+	    }).
+	    when('/formelements_form/:tableNameToCustomize', 
+	    {
+		controller: 'formOrderController',
+		templateUrl: 'formElementsOrderForm.html'
+	    }).
+	    when('/table_crud/:viewName',
             {
                 templateUrl: 'tableviewCrud.html',
                 controller: 'gridController'

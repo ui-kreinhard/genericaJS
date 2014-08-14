@@ -38,7 +38,13 @@ exports.dataDao = function(connection) {
     var localFunctions = function(params, response) {
         return {
           	deleteRecord: function(endQuery) {
-						connection.query("delete from " + params.tableName + " where id IN (" + params.id.join() + ')',
+						var filter = '';
+						if(params.filter) {
+							filter = getFilter(params);
+						} else {
+							filter = " where id IN (" + params.id.join() + ')';
+						}
+						connection.query("delete from " + params.tableName + filter,
                         function(result) {
 					
                         },
@@ -149,7 +155,7 @@ exports.dataDao = function(connection) {
                values: dataToInsert
             }, function(result) {
 			    var local = localFunctions(params, response);
-            local.getSchema(function(response) {
+            	local.getSchema(function(response) {
                 var queryString = 'select 1';
                 
                 var columns = [];

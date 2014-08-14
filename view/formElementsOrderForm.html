@@ -1,0 +1,12 @@
+    <body ng-controller="formOrderController">
+	<form 
+		ng-submit="submit()">
+		<div class="form-group">
+			<select id="formElements" style="width:200px; height: 400px" multiple ng-model="selectedFormElement" ng-options="formelement.column_name for formelement in formelements"></select><br/>
+			
+			<input type="button" ng-click="moveUp()" value="Move up">
+			<input type="button" ng-click="moveDown()" value="Move down"><br/>
+			<input type="submit" value="Submit">
+	</div>
+	</form>
+    </body>
