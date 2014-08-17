@@ -45,6 +45,7 @@ app.controller('gridController', function($scope, $http, $routeParams) {
                 function(data, status, headers, config) {
                     rowData = [];
                     columns = [];
+
                     columns = data.schema;
                     $scope.totalServerItems = data.dataCount;
 	            $scope.rights.canDelete = data.rights.canDelete;
@@ -67,8 +68,9 @@ app.controller('gridController', function($scope, $http, $routeParams) {
 		    }
                     angular.forEach(data.data, function(value, key) {
                         var singleRow = {};
-                        angular.forEach(value, function(singleElement, elementKey) {
-                            singleRow[elementKey] = singleElement;
+                        angular.forEach(data.schema, function(schemaElement, elementKey) {
+			    var attributeName = schemaElement.field;
+                            singleRow[attributeName] = value[attributeName];
                         });
                         rowData.push(singleRow);
                     });
@@ -102,7 +104,6 @@ app.controller('gridController', function($scope, $http, $routeParams) {
         totalServerItems: 'totalServerItems',
         columnDefs: $scope.columns,
 	keepLastSelected: false,
-        columns: $scope.columns,
         pagingOptions: $scope.pagingOptions,
         enablePaging: true,
         showFooter: true,
