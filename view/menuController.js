@@ -59,7 +59,7 @@ app.controller('menuController', function($scope, $http, $routeParams) {
 			idMappedData[value.id] = value;
 		});
 		angular.forEach(idMappedData, function(value, key) {
-			if(value.menu_idmenu!=null && value.menu_idmenu!='') {
+			if(value.menu_idmenu!=null && value.menu_idmenu!=='') {
 				var parent = idMappedData[value.menu_idmenu];
 				parent.children.push({
 					text: value.menulabel,
