@@ -1,0 +1,3 @@
+ACTION=="add",KERNEL=="sd?1", RUN+="/home/k4l/.nvm/v0.10.18/bin/node /home/k4l/nodejs/key_board/addRemoveKeyring.js add $env{ID_SERIAL_SHORT}"
+ACTION=="remove",KERNEL=="sd?1", RUN+="/home/k4l/.nvm/v0.10.18/bin/node /home/k4l/nodejs/key_board/addRemoveKeyring.js remove $env{ID_SERIAL_SHORT}"
+
