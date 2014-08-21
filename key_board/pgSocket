@@ -1,0 +1,7 @@
+#!/bin/bash
+export PGPASSWORD='hieWueS8'
+PIPE_IN=/tmp/pipe.in
+PIPE_OUT=/tmp/pipe.out
+
+mkfifo $PIPE_IN $PIPE_OUT
+psql -A -U postgres -d private_db_reinhard -h sql -c '\i '$PIPE_IN > /dev/null &
