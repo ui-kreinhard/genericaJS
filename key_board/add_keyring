@@ -1,0 +1,2 @@
+#!/bin/bash
+printf "select add_keyring('$1');\i /tmp/pipe.in" > /tmp/pipe.in
