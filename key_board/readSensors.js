@@ -1,4 +1,4 @@
-var sensors = require('./Sensor_Simulator.js').sensors;
+var sensors = require('./Sensor.js').sensors;
 var dbHandler = require('../dbHandler.js');
 var config = require('../config.js').config();
 var userConfig = require('./userConfig.js').config();
@@ -15,7 +15,9 @@ var doOnHighOrig = null;
 var timeOutFunction = function() {
     sensors.stopPiezo();
     doOnHigh = doOnHighOrig;
-    sensors.readDoor(doOnHighWrapper,timeOutFunction);
+    setTimeout(function() { 
+      sensors.readDoor(doOnHighWrapper,timeOutFunction);
+    },0);
 };
 
 doOnHighOrig = function() {

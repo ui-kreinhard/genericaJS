@@ -1,0 +1,20 @@
+#!/bin/bash
+
+case "$1" in
+start)
+echo 'Starting Sensor Listener'
+touch /var/lock/readDoorSensor.pid
+node /root/genericaJS/key_board/readSensors.js > /dev/null &
+echo $! > /var/lock/readDoorSensor.pid
+;;
+stop)
+echo "Killing pgSocket"
+kill $(cat /var/lock/readDoorSensor.pid)
+rm /var/lock/readDoorSensor.pid
+;;
+*)
+echo "Usage: /etc/init.d/readDoorSensor {start|stop}"
+exit 1
+;;
+esac
+exit 0

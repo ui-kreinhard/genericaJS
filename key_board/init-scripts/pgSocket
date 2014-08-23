@@ -1,0 +1,25 @@
+#!/bin/bash
+export PGPASSWORD='hieWueS8'
+PIPE_IN=/tmp/pipe.in
+PIPE_OUT=/tmp/pipe.out
+
+case "$1" in
+start)
+echo 'Starting socket'
+mkfifo $PIPE_IN $PIPE_OUT
+psql -A -U postgres -d private_db_reinhard -h sql -c '\i '$PIPE_IN > /dev/null &
+touch /var/lock/pgSocket.pid
+echo $! > /var/lock/pgSocket.pid
+;;
+stop)
+echo "Killing pgSocket"
+kill $(cat /var/lock/pgSocket.pid)
+rm /var/lock/pgSocket.pid
+rm -rf $PIPE_IN $PIPE_OUT
+;;
+*)
+echo "Usage: /etc/init.d/pgSocket {start|stop}"
+exit 1
+;;
+esac
+exit 0
