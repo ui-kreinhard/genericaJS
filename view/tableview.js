@@ -22,7 +22,7 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
     $scope.sortOptions = $scope.gridOptions.sortInfo;
     var savedSortInfo =  angular.copy($scope.gridOptions.sortInfo);
     $scope.addListener = function(listener) {
-        selectionChangedListeners.push(listener);
+        $scope.gridOptions.addListener(listener);
     };
 
     var watcherAdded = false;

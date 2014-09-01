@@ -13,7 +13,8 @@ app.service('gridOptionsService', function() {
         };
         var defaultColumns = [];
         if (savedGridOptions[viewName] == null) {
-            savedGridOptions[viewName] = {
+            var that = savedGridOptions[viewName] = {
+                that: null,
                 data: 'rowData',
                 totalServerItems: 'totalServerItems',
                 columnDefs: 'columns',
@@ -25,14 +26,23 @@ app.service('gridOptionsService', function() {
                 sortInfo: defaultSortOptions,
                 showColumnMenu: true,
                 useExternalSorting: false,
-                afterSelectionChange: function(data) {
-                    for (var i = 0; i < selectionChangedListeners.length; i++) {
-                        var listener = selectionChangedListeners[i];
-                        listener(data.selectionProvider.selectedItems);
-                    }
+                selectionChangedListeners: [],
+                addListener: function(listener) {
+                    this.selectionChangedListeners.push(listener);
                 },
+                afterSelectionChange: function(viewName) {
+                    return function(data) {
+                    var self = savedGridOptions[viewName];
+
+                        for (var i = 0; i < self.selectionChangedListeners.length; i++) {
+                            var listener = self.selectionChangedListeners[i];
+                            listener(data.selectionProvider.selectedItems);
+                        }
+                    }
+                }(viewName),
                 selectedItems: []
             };
+            savedGridOptions[viewName].that = savedGridOptions[viewName];
         }
         return savedGridOptions[viewName];
     };
