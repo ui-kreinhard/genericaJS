@@ -1,4 +1,5 @@
-app.controller('autoFormController', function($scope, $http, $routeParams) {
+app.controller('autoFormController', function($scope, $http, $routeParams, returnPageService) {
+    
     $scope.model = {};
     $scope.errors = {
 	errorList: [],
@@ -52,6 +53,7 @@ app.controller('autoFormController', function($scope, $http, $routeParams) {
         }).
         success(function(data, status, headers, config) {
 		$scope.errors.errorList = [];
+                returnPageService.goToReturnPage();
         }).
         error(function(data, status, headers, config) {
             $scope.errors.errorList = data.errors;
