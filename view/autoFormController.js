@@ -69,15 +69,15 @@ app.directive('autoform', function($compile) {
         var displayName = scope.content.displayName;
         var data_type = scope.content.data_type;
         var textLength = scope.content.textlength;
-        retStr += '<label class="control-label col-xs-2" for="' + field + '">' + displayName + '</label>\n\
-        <div class="col-xs-10">';
+        retStr += '<label class="control-label " for="' + field + '">' + displayName + '</label>\n\
+        ';
         if (field == 'id') {
             data_type = 'id';
         }
         switch (data_type) {
             case 'combobox':
                 var selectionElements = scope.content.selectionElements;
-                retStr += '<select ng-model="model.' + field + '" id="' + field + '">';
+                retStr += '<select style="width: 100%" ng-model="model.' + field + '" id="' + field + '">';
                 angular.forEach(selectionElements, function(value, key) {
                     retStr += '<option value="' + value.value + '">' + value.label + '</option>';
                 });
@@ -85,25 +85,24 @@ app.directive('autoform', function($compile) {
                 break;
             case 'character varying':
                 if (textLength < 65) {
-                    retStr += '<input ng-model="model.' + field + '" id="' + field + '"></input>';
+                    retStr += '<input style="width: 100%" ng-model="model.' + field + '" id="' + field + '"></input>';
                 } else {
-                    retStr += '<textarea ng-model="model.' + field + '" id="' + field + '"></textarea>';
+                    retStr += '<textarea class="also" style="resize:vertical; width: 100%; height: 50px "  ng-model="model.' + field + '" id="' + field + '"></textarea>';
                 }
                 break;
             case 'timestamp without time zone':
-                retStr += ' <input type="text" ng-model="model.' + field + '"  bs-datepicker>';
+                retStr += ' <input style="width: 100%" type="text" ng-model="model.' + field + '"  bs-datepicker>';
                 break;
             case 'boolean':
-                retStr += '<input type="checkbox" ng-model="model.' + field + '" id="' + field + '"></input>';
+                retStr += '<input  style="width: 100%" type="checkbox" ng-model="model.' + field + '" id="' + field + '"></input>';
                 break;
             case 'id':
-                retStr += '<input ng-model="model.' + field + '" id="' + field + '" disabled></input>';
+                retStr += '<input style="width: 100%" ng-model="model.' + field + '" id="' + field + '" disabled></input>';
                 break;
             default:
-                retStr += '<input ng-model="model.' + field + '" id="' + field + '"></input>';
+                retStr += '<input style="width: 100%" ng-model="model.' + field + '" id="' + field + '"></input>';
                 break;
         }
-        retStr += '</div>';
         return retStr;
     };
 

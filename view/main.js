@@ -1,4 +1,4 @@
-var app = angular.module('generica', ['ngGrid', 'ngRoute', 'ngResource', 'mgcrea.ngStrap']);
+var app = angular.module('generica', [ 'jui', 'ngGrid', 'ngRoute', 'ngResource', 'mgcrea.ngStrap']);
 
 
 
