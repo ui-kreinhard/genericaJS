@@ -16,6 +16,11 @@
         <script type="text/javascript" src="libs/angular-resource.js"></script>
         
 
+  
+        <script type="text/javascript" src="bower_components/angular-tree-control/angular-tree-control.js"></script>
+        <link rel="stylesheet" type="text/css" href="bower_components/angular-tree-control/css/tree-control.css">
+        <link rel="stylesheet" type="text/css" href="bower_components/angular-tree-control/css/tree-control-attribute.css">
+        
 
 
         <script type="text/javascript" src="main.js"></script>
@@ -34,27 +39,25 @@
               
         <script src="bower_components/angular-strap/dist/angular-strap.min.js"></script>
         <script src="bower_components/angular-strap/dist/angular-strap.tpl.min.js"></script>
+	
+	
 	<script type="text/javascript" src="menuController.js"></script>
     </head>
     <body>
-	<table ng-controller="menuController" class="form-horizontal">
-		<tr>
-                <td ng-repeat="menuItem in menuItems">
-			<span ng-if="menuItem.hasNoLink()">
-			<button type="button" class="btn " data-animation="am-flip-x" bs-dropdown="menuItem.children">
-				{{menuItem.menulabel}}
-			</button>
-			</span>
-			<span ng-if="menuItem.hasLink()">
-                        <button type="button" class="btn " data-animation="am-flip-x">
-                                <a href="{{menuItem.link}}">{{menuItem.menulabel}}</a>
-                        </button>
-			</span>
-		</td>
-		</tr>
-	</table>
+	<table style="width:100%">
+	<tr><td valign="top" width="15%">
+	<treecontrol ng-controller="menuController" class="tree-classic"
+	   tree-model="menuItems"
+	   options="treeOptions"
+	   on-selection="selectedNode(node)"
+	   selected-node="">
+	   {{node.menulabel}}
+	</treecontrol>
+	</td><td valign="top">  
         <div ng-view>
 
         </div>
+	</td>
+	</tr></table>
     </body>
 </html>
