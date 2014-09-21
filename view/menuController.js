@@ -26,7 +26,7 @@ $scope.selectedNode = function(node) {
 		params: {
 			pageSize: '1000',
 			page: 1,
-			tableName: 'menu'
+			tableName: 'menu_view'
 		}
 	}).success(function(data, status, headers, config) {
 		var untransformedData = data.data;

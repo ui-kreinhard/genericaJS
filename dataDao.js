@@ -65,8 +65,9 @@ exports.dataDao = function(connection) {
             },
 			getRights: function(endQuery) {
 				response.rights = {canRead: false, canInsert: false, canUpdate: false, canDelete: false};
-				connection.query("select * from table_rigths where table_name = '" + params.tableName + "'",
+				connection.query("select * from table_rights where table_name = '" + params.tableName + "'",
                         function(result) {
+                            console.log(result);
 							if(result.priv=='SELECT') {
 								response.rights.canRead = true;
 							}
@@ -90,13 +91,15 @@ exports.dataDao = function(connection) {
                     function(result) {
                         if(result.data_type=='combobox') {
                             result.selectionElements = [];
-                            var values = result.valuescombobox.split(",");
-                            var labels = result.labels.split(",");
-                            for(var i=0;i<values.length;i++) {
-                                result.selectionElements.push({
-                                    value: values[i],
-                                    label: labels[i]
-                                });
+                            if(result.valuescombobox) {
+                                var values = result.valuescombobox.split(",");
+                                var labels = result.labels.split(",");
+                                for(var i=0;i<values.length;i++) {
+                                    result.selectionElements.push({
+                                        value: values[i],
+                                        label: labels[i]
+                                    });
+                                }
                             }
                         }
                         return result;
