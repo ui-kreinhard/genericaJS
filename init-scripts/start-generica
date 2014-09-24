@@ -1,0 +1,20 @@
+#!/bin/bash
+GENERICA_HOME='/root/genericaJS'
+
+case "$1" in
+start)
+echo 'Starting generica'
+node $GENERICA_HOME/express.js > /dev/null &
+echo $! > /var/lock/generica.pid
+;;
+stop)
+echo "Stopping generica"
+kill $(cat /var/lock/generica.pid)
+rm /var/lock/generica.pid
+;;
+*)
+echo "Usage: /etc/init.d/start-generica {start|stop}"
+exit 1
+;;
+esac
+exit 0
