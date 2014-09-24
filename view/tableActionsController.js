@@ -13,11 +13,12 @@ app.controller('tableActionsController', function($scope, $http, $routeParams, $
     $scope.rights = $scope.$parent.rights;
     $scope.$parent.addListener(function(selectedItems) {
         selectedItemIds = [];
+	var lastIndex = selectedItems.length - 1;
         angular.forEach(selectedItems, function(value, key) {
             selectedItemIds.push(value.id);
         });
         if (selectedItems.length > 0) {
-            $scope.editUrl = editUrlTemplate + selectedItems[0].id;
+            $scope.editUrl = editUrlTemplate + selectedItems[lastIndex].id;
         } else {
             $scope.editUrl = '#' + $location.path();
         }

@@ -1,77 +1,68 @@
-app.controller('menuController', function($scope, $http, $routeParams) {
+app.controller('menuController', function($scope, $http, $routeParams, $location) {
+$scope.options = {
+    nodeChildren: "children",
+    dirSelectable: false,
+    injectClasses: {
+        ul: "a1",
+        li: "a2",
+        liSelected: "a7",
+        iExpanded: "a3",
+        iCollapsed: "a4",
+        iLeaf: "a5",
+        label: "a6",
+        labelSelected: "a8"
+    }
+};
 	$scope.menuItems = [
-		{
-			menulabel: 'Worktimes',
-			link: '',
-			hasLink: function() {
-				return false;
-			},
-			hasNoLink: function() {
-				return true;
-			},
-			children: [
-				{
-					menuLabel: 'bla',
-					link: 'asdf',
-					hasLink: function() {
-						return true;
-					}
-					, hasNoLink: function() {
-						return false;
-					}
-				}
-			]
-		},
-               {
-                        menulabel: 'Worktimes2',
-                        link: '#/table/worktimes',
-			children: [],
-			hasLink: function() {
-				return true;
-			},
-			hasNoLink: function() {
-                                return false;
-                        },
-
-                }
-		
-	];
-	$scope.menuItems = [];
+];
+$scope.selectedNode = function(node) {
+	if(node.hasLink()) {
+		$location.path(node.link);
+	}
+};
 	$http({
 		method: 'GET',
 		url: '../readout_table',
 		params: {
 			pageSize: '1000',
 			page: 1,
-			tableName: 'menu'
+			tableName: 'menu_view'
 		}
 	}).success(function(data, status, headers, config) {
 		var untransformedData = data.data;
 		var idMappedData = {};
 		angular.forEach(untransformedData, function(value,key) {
-			value.children = [];
-			value.hasLink = function() {
+			idMappedData[value.id] = {
+                                menu_idmenu: value.menu_idmenu,
+                                menulabel: value.menulabel,
+                                link: value.link,
+                                children: [],
+                                parent: false
+                        };
+
+			idMappedData[value.id].hasLink = function() {
 				return this.children.length <= 0;
 			};
-			value.hasNoLink = function() {
+			idMappedData[value.id].hasNoLink = function() {
 				return !this.hasLink();
 			};
-			idMappedData[value.id] = value;
+
 		});
 		angular.forEach(idMappedData, function(value, key) {
 			if(value.menu_idmenu!=null && value.menu_idmenu!=='') {
 				var parent = idMappedData[value.menu_idmenu];
-				parent.children.push({
-					text: value.menulabel,
-					href: value.link
-				});
+				value.parent = true;
+				parent.children.push(
+				value
+				);
 			}
 		});
 		angular.forEach(idMappedData, function(value, key) {
-			if(value.children.length > 0) {
+			if(!value.parent) {
 				$scope.menuItems.push(value);
 			}
 		});
+		console.log($scope.menuItems);
 	}).error(function(data, status, headers, config) {
 		console.log('cannot load menu data');
 		console.log(status);
