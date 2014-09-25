@@ -2,7 +2,7 @@
 var config = require('./config.js').config();
 
 var dataDaoHandler = require('./dataDaoHandler.js').dataDaoHandler();
-require('./sessionTimeoutHandler.js').sessionTimeoutHandler(dataDaoHandler);
+require('./sessionTimeoutHandler.js').sessionTimeoutHandler(dataDaoHandler, config.session.sessionTimeOut);
 
 var express = require('express');
 var url = require('url');
