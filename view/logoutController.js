@@ -7,7 +7,9 @@ app.controller('logoutController', function($scope, $http, $routeParams, $locati
         }).
         success(
         function(data, status, headers, config) {
-        	$location.path('/login');
+        	
+                 location.href = location.pathname + "#/login";
+                 location.reload(true);
         }).
         error(function(data, status, headers, config) {
 		$location.path('/generalFailure');

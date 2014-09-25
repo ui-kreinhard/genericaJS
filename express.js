@@ -1,22 +1,8 @@
 
 var config = require('./config.js').config();
 
-var dataDaoHandler = function() {
-    var dataDaos = {};
-    return {
-        add: function(sessionID, dataDao) {
-            if (!dataDaos[sessionID]) {
-                dataDaos[sessionID] = dataDao;
-            }
-        },
-        get: function(sessionID) {
-            return dataDaos[sessionID];
-        },
-        remove: function(sessionID) {
-            delete dataDaos[sessionID];
-        }
-    }
-}();
+var dataDaoHandler = require('./dataDaoHandler.js').dataDaoHandler();
+require('./sessionTimeoutHandler.js').sessionTimeoutHandler(dataDaoHandler);
 
 var express = require('express');
 var url = require('url');
@@ -42,7 +28,6 @@ var errorHandler = function(req,res) {
          res.statusCode = 500;
          console.log(errorMessage);
          res.send(errorMessage);
-	//	 res.end();
          return noneHandler;
      } else {
 		 if( successHandler && typeof successHandler == 'function') {

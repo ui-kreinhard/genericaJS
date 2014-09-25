@@ -1,4 +1,4 @@
-app.controller('loginController', function($scope, $http, $routeParams, $location) {
+app.controller('loginController', function($scope, $http, $routeParams, $location, $route) {
     $scope.loginModel = {
         username: '',
         password: '',
@@ -18,11 +18,12 @@ app.controller('loginController', function($scope, $http, $routeParams, $locatio
                 success(
                 function(data, status, headers, config) {
                     $scope.loginModel.authFailed = false;
-                    $location.path('/welcome');
+                    location.href = location.pathname + "#/welcome";
+                    location.reload(true);
                 }).
                 error(function(data, status, headers, config) {
-                    $scope.loginModel.authFailed = true;
-                }
+            $scope.loginModel.authFailed = true;
+        }
         );
     };
 });
