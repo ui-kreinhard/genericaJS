@@ -10,6 +10,8 @@ app.controller('tableActionsController', function($scope, $http, $routeParams, $
     $scope.editUrl = '#' + $location.path();
     $scope.createUrl = '#autoform/' + viewName;
     $scope.deleteUrl = '#autoform/delete';
+    $scope.exportToCsv = "../exportToCsv?tableName=" + viewName;
+    
     $scope.rights = $scope.$parent.rights;
     $scope.$parent.addListener(function(selectedItems) {
         selectedItemIds = [];

@@ -3,5 +3,6 @@
         <a ng-show="rights.canInsert" ng-href="{{createUrl}}">Create</a>
         <a ng-show="rights.canUpdate" href="{{editUrl}}">Edit</a>
         <a ng-show="rights.canDelete" ng-click="delete()">Delete</a>
+        <a ng-href="{{exportToCsv}}">Export to CSV</a>
 </div>
 <div class="slide-animate" ng-include="'tableview.html'"></div>
