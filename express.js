@@ -75,14 +75,17 @@ app.post('/csv_import', function(req, res) {
     var fs = require('fs');
     var Converter = require("csvtojson").core.Converter;
     var csvConverter = new Converter({constructResult: true});
-    // get the temporary location of the file
-    var csvFileName = req.files.csvFile.path;
     var url_parts = url.parse(req.url, true);
-    var tableName = url_parts.query.table_name;
-   
-
-    var fileStream = fs.createReadStream(csvFileName);
-    var insertRecords = function(csvConvertedObject) {
+    var parseAndInsert;
+	
+     
+  
+    var tableName = req.body.view_name;
+    console.log(req.files.file)
+    errorHandler(req, res)
+    (isNotDefined(tableName), 'No tablename specifed')
+    (isNotDefined(req.files.file),'No CSV file given', function() {
+        var insertRecords = function(csvConvertedObject) {
         var dataDao = req.dataDao;
         var i = 0;
         var overallResponse = {
@@ -98,14 +101,29 @@ app.post('/csv_import', function(req, res) {
             query.tableName = tableName;
 
             query.errorHandler = function(err) {
-                res.statusCode = 500;
+                err.recordNumber = i+1;
+                i++;
                 overallResponse.errors.push(err);
+                if (i < length) {
+                    insertNextRecord();
+                } else {
+                    res.statusCode = 200;
+                    res.send(overallResponse);
+                }
             };
             query.validationErrorHandler = function(response) {
-                res.statusCode = 412;
+                response.recordNumber = i+1;
+                i++;
                 overallResponse.errors.push(response);
+                if (i < length) {
+                    insertNextRecord();
+                } else {
+                    res.statusCode = 200;
+                    res.send(overallResponse);
+                }
             };
             query.successHandler = function(response) {
+                response.recordNumber = i+1;
                 overallResponse.success.push(response);
                 i++;
                 if (i < length) {
@@ -119,15 +137,20 @@ app.post('/csv_import', function(req, res) {
         };
         insertNextRecord();
     }; 
-
-    parseAndInsert = function() {
+        
+           // get the temporary location of the file
+       var csvFileName = req.files.file.path;
+   
+      var fileStream = fs.createReadStream(csvFileName);
       csvConverter.on("end_parsed", insertRecords);
       fileStream.pipe(csvConverter);
-    }
-    
-    errorHandler(req, res)
-    (isNotDefined(tableName), 'No tablename specifed', parseAndInsert);
+    });
 
+
+    
+   
+
+    
 });
 
 

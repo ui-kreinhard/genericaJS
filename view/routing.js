@@ -51,6 +51,12 @@ app.config(function($routeProvider) {
             {
                 templateUrl: 'tableviewCrud.html',
                 controller: 'gridController'
-            });
+            }).
+            when('/upload_csv/:viewName',
+            {
+                templateUrl: 'uploadCsv.html',
+                controller: 'uploadCsvController'
+            })            
+            ;
 });
 

@@ -85,22 +85,22 @@ app.directive('autoform', function($compile) {
                 break;
             case 'character varying':
                 if (textLength < 65) {
-                    retStr += '<input style="width: 100%" ng-model="model.' + field + '" id="' + field + '"></input>';
+                    retStr += '<input class="form-control" style="width: 100%" ng-model="model.' + field + '" id="' + field + '"></input>';
                 } else {
-                    retStr += '<textarea class="also" style="resize:vertical; width: 100%; height: 50px "  ng-model="model.' + field + '" id="' + field + '"></textarea>';
+                    retStr += '<textarea class="form-control" class="also" style="resize:vertical; width: 100%; height: 50px "  ng-model="model.' + field + '" id="' + field + '"></textarea>';
                 }
                 break;
             case 'timestamp without time zone':
-                retStr += ' <input style="width: 100%" type="text" ng-model="model.' + field + '"  bs-datepicker>';
+                retStr += ' <input class="form-control" style="width: 100%" type="text" ng-model="model.' + field + '"  bs-datepicker>';
                 break;
             case 'boolean':
-                retStr += '<input  style="width: 100%" type="checkbox" ng-model="model.' + field + '" id="' + field + '"></input>';
+                retStr += '<input style="width: 100%" type="checkbox" ng-model="model.' + field + '" id="' + field + '"></input>';
                 break;
             case 'id':
-                retStr += '<input style="width: 100%" ng-model="model.' + field + '" id="' + field + '" disabled></input>';
+                retStr += '<input class="form-control" style="width: 100%" ng-model="model.' + field + '" id="' + field + '" disabled></input>';
                 break;
             default:
-                retStr += '<input style="width: 100%" ng-model="model.' + field + '" id="' + field + '"></input>';
+                retStr += '<input class="form-control" style="width: 100%" ng-model="model.' + field + '" id="' + field + '"></input>';
                 break;
         }
         return retStr;

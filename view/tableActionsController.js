@@ -11,6 +11,7 @@ app.controller('tableActionsController', function($scope, $http, $routeParams, $
     $scope.createUrl = '#autoform/' + viewName;
     $scope.deleteUrl = '#autoform/delete';
     $scope.exportToCsv = "../exportToCsv?tableName=" + viewName;
+    $scope.importCsv = "#/upload_csv/" + viewName;
     
     $scope.rights = $scope.$parent.rights;
     $scope.$parent.addListener(function(selectedItems) {

@@ -1,0 +1,34 @@
+<legend>Generica CSV Upload</legend>  
+<div  style="width: 500px">
+    <div ng-show="hasError" class="alert alert-danger" >
+    <div ng-repeat="error in response.errors">
+        Record #{{error.recordNumber}} failed
+    </div>
+</div>
+    <div ng-show="hasSuccess" class="alert alert-success" >
+    <div ng-repeat="successMsg in response.success">
+       Record #{{successMsg.recordNumber}} imported with {{successMsg.command}}   
+    </div>
+</div>
+    
+     <a ng-click="goBack()">Go Back</a>
+    <form 
+        class="form-horizontal"
+        ng-submit="submit()"
+
+        >
+        <div class="form-group">
+            <label for="viewNameText">View Name</label>
+            <input class="form-control" id="viewNameText" type="text" ng-model="viewName">
+        </div>
+        <div class="form-group">
+            <label for="csvFile">CSV File</label>
+            <input class="form-control" id="csvFile" name="csvFile" type="file" ng-file-select="onFileSelect($files)">
+        </div>
+        <div class="form-group">
+           
+            <button  id="uploadBtn" ng-click="upload()">Upload</button>   
+        </div>
+    </form>   
+</div>
+
