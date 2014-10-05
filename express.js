@@ -48,12 +48,13 @@ app.use(session({
 
 app.use('/view', express.static(__dirname + '/view'));
 var bodyParser = require('body-parser');
+var multer = require('multer')
+
 // parse application/json and application/x-www-form-urlencoded
 app.use(bodyParser());
-
 // parse application/vnd.api+json as json
 app.use(bodyParser.json({type: 'application/json'}));
-
+app.use(multer({dest: './uploads/'}));
 app.use(function(req, res, next) {
 
     if (req.originalUrl == '/logout' || req.originalUrl == '/login' || req.originalUrl.indexOf('/view') == 0) {
@@ -69,6 +70,66 @@ app.use(function(req, res, next) {
     res.statusCode = 401;
     res.send();
 });
+
+app.post('/csv_import', function(req, res) {
+    var fs = require('fs');
+    var Converter = require("csvtojson").core.Converter;
+    var csvConverter = new Converter({constructResult: true});
+    // get the temporary location of the file
+    var csvFileName = req.files.csvFile.path;
+    var url_parts = url.parse(req.url, true);
+    var tableName = url_parts.query.table_name;
+   
+
+    var fileStream = fs.createReadStream(csvFileName);
+    var insertRecords = function(csvConvertedObject) {
+        var dataDao = req.dataDao;
+        var i = 0;
+        var overallResponse = {
+            errors: [],
+            success: []
+        };
+        var length = csvConvertedObject.length;
+
+        var insertNextRecord = function() {
+            var query = {};
+            query.data = csvConvertedObject[i];
+
+            query.tableName = tableName;
+
+            query.errorHandler = function(err) {
+                res.statusCode = 500;
+                overallResponse.errors.push(err);
+            };
+            query.validationErrorHandler = function(response) {
+                res.statusCode = 412;
+                overallResponse.errors.push(response);
+            };
+            query.successHandler = function(response) {
+                overallResponse.success.push(response);
+                i++;
+                if (i < length) {
+                    insertNextRecord();
+                } else {
+                    res.statusCode = 200;
+                    res.send(overallResponse);
+                }
+            };
+            dataDao.insertOrUpdateRecord(query);
+        };
+        insertNextRecord();
+    }; 
+
+    parseAndInsert = function() {
+      csvConverter.on("end_parsed", insertRecords);
+      fileStream.pipe(csvConverter);
+    }
+    
+    errorHandler(req, res)
+    (isNotDefined(tableName), 'No tablename specifed', parseAndInsert);
+
+});
+
 
 
 app.get('/logout', function(req, res) {

@@ -8,7 +8,7 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
 
     $scope.gridOptions = gridOptionsService.getGridOptions(viewName);
 
-
+    $scope.columns = [];
     $scope.rights = {
         canDelete: false,
         canInsert: false,
@@ -75,8 +75,10 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
                         });
                         rowData.push(singleRow);
                     });
+$scope.columns = columns;
+$scope.$emit('loadedTableData');
+
                     $scope.rowData = rowData;
-                    $scope.columns = columns;
                     //    $scope.sortOptions.columns = columns;
                      if (!watcherAdded) {
                         $scope.$watch('sortOptions', function(newVal, oldVal) {
@@ -89,9 +91,6 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
                     if (!$scope.$$phase) {
                         $scope.$apply();
                     }
-                   
-                    
-
                 }).
                 error(function(data, status, headers, config) {
             console.log(status);
@@ -108,8 +107,4 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
             $scope.getPagedDataAsync();
         }
     }, true);
-
-
-
-
 });
