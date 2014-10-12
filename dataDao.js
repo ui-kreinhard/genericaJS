@@ -1,6 +1,7 @@
 
 exports.dataDao = function(connection) {
     var validatonController = require('./validationController.js').validatonController(this, connection);
+    
 
     var getFilter = function(params) {
         var filter = ' WHERE 1=1 ';
@@ -166,16 +167,25 @@ exports.dataDao = function(connection) {
 
                     var columns = [];
                     var values = [];
-                    for (var attributename in dataToInsert) {
-                        var value = dataToInsert[attributename];
-                        if (value != null) {
-                            columns.push('"' + attributename + '"');
-                            values.push("'" + value + "'");
+                    var fillColumnsAndValues = function() {
+                        for (var attributename in dataToInsert) {
+                            var value = dataToInsert[attributename];
+                            if (value != null) {
+                                columns.push('"' + attributename + '"');
+                                values.push("'" + value + "'");
+                            }
                         }
-                    }
+                    };
                     // recognize if we have an id - if so, it has to be an update
-                    if (typeof dataToInsert.id !== 'undefined' && dataToInsert.id !== null && dataToInsert.id != '') {
-                        queryString = 'UPDATE ' + tableName + ' SET '
+                    if (typeof dataToInsert.id == 'undefined' || dataToInsert.id == null || dataToInsert.id == 'null' || dataToInsert.id == '') {
+                        if(typeof dataToInsert.id != 'undefined') {
+                            delete dataToInsert.id;
+                        }
+                        fillColumnsAndValues();
+                        queryString = 'INSERT INTO ' + tableName + '(' + columns.join() + ') VALUES (' + values.join() + ')';
+                    } else {
+                        fillColumnsAndValues();
+                        queryString = 'UPDATE ' + tableName + ' SET ';
                         var whereCondition = ' where id=';
                         var called = false;
                         concatOperator = function() {
@@ -192,11 +202,7 @@ exports.dataDao = function(connection) {
                             }
                             queryString += concatOperator() + columns[i] + '=' + values[i];
                         }
-
                         queryString += whereCondition;
-                    } else {
-                        queryString = 'INSERT INTO ' + tableName + '(' + columns.join() + ') VALUES (' + values.join() + ')';
-
                     }
                     connection.query(queryString, function() {
                     }, params.errorHandler, params.successHandler);

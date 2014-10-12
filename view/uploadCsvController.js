@@ -26,7 +26,6 @@ app.controller('uploadCsvController', function($scope, $http, $routeParams, retu
             $scope.response = data;
             $scope.hasSuccess = data.success.length > 0;
             $scope.hasError = data.errors.length > 0;
-        
         });
     };
 });
