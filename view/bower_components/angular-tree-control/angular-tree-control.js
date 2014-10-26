@@ -27,6 +27,7 @@
                 restrict: 'EA',
                 require: "treecontrol",
                 transclude: true,
+                replace: true,
                 scope: {
                     treeModel: "=",
                     selectedNode: "=?",

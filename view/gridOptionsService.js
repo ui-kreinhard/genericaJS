@@ -38,7 +38,7 @@ app.service('gridOptionsService', function() {
                             var listener = self.selectionChangedListeners[i];
                             listener(data.selectionProvider.selectedItems);
                         }
-                    }
+                    };
                 }(viewName),
                 selectedItems: []
             };

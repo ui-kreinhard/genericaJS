@@ -56,7 +56,12 @@ app.config(function($routeProvider) {
             {
                 templateUrl: 'uploadCsv.html',
                 controller: 'uploadCsvController'
-            })            
+            }).
+            when('/change_menu',
+            {
+                templateUrl: 'changeMenu.html',
+                controller: 'menuController'
+            })        
             ;
 });
 

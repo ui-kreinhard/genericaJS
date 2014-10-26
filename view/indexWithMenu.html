@@ -36,6 +36,8 @@
         <script type="text/javascript" src="tableFormElementsOrderController.js"></script>
         <script type="text/javascript" src="gridOptionsService.js"></script>
         <script type="text/javascript" src="returnPageService.js"></script>
+        <script type="text/javascript" src="menuElementService.js"></script>
+
         
               
         <script src="bower_components/angular-strap/dist/angular-strap.min.js"></script>
@@ -48,9 +50,10 @@
     </head>
     <body>
 	<table style="width:100%">
-	<tr><td valign="top" width="15%">
-	<treecontrol ng-controller="menuController" class="tree-classic"
+	<tr><td valign="top" width="15%"  ng-controller="menuController" >
+	<treecontrol class="tree-classic"
 	   tree-model="menuItems"
+          
 	   options="treeOptions"
 	   on-selection="selectedNode(node)"
 	   selected-node="">
