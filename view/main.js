@@ -1,6 +1,6 @@
 var menuName = 'view_menu';
 
-var app = angular.module('generica', [ 'ngGrid', 'ngRoute', 'ngResource', 'mgcrea.ngStrap', 'treeControl','angularFileUpload']);
+var app = angular.module('generica', [ 'ui.grid','ui.grid.paging','ui.grid.autoResize', 'ui.grid.selection', 'ngGrid', 'ngRoute', 'ngResource', 'mgcrea.ngStrap', 'treeControl','angularFileUpload']);
 
 
 

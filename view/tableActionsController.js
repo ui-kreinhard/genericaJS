@@ -3,8 +3,6 @@ app.controller('tableActionsController', function($scope, $http, $routeParams, $
     returnPageService.setReturnPage();
 
     var editUrlTemplate = '#autoform/' + viewName + '/';
-    var createUrlTemplate = '#autoform/' + viewName + '/';
-    var deleteUrlTemplate = '#autoform/delete/' + viewName + '/';
     var selectedItemIds = [];
 
     $scope.editUrl = '#' + $location.path();
@@ -12,16 +10,14 @@ app.controller('tableActionsController', function($scope, $http, $routeParams, $
     $scope.deleteUrl = '#autoform/delete';
     $scope.exportToCsv = "../exportToCsv?tableName=" + viewName;
     $scope.importCsv = "#/upload_csv/" + viewName;
-    
+
     $scope.rights = $scope.$parent.rights;
-    $scope.$parent.addListener(function(selectedItems) {
-        selectedItemIds = [];
-	var lastIndex = selectedItems.length - 1;
-        angular.forEach(selectedItems, function(value, key) {
-            selectedItemIds.push(value.id);
-        });
+    $scope.$parent.gridOptions.addListener(function(selectedItems) {
+        selectedItemIds = selectedItems;
+        var lastIndex = selectedItems.length - 1;
+
         if (selectedItems.length > 0) {
-            $scope.editUrl = editUrlTemplate + selectedItems[lastIndex].id;
+            $scope.editUrl = editUrlTemplate + selectedItems[lastIndex];
         } else {
             $scope.editUrl = '#' + $location.path();
         }
@@ -42,7 +38,7 @@ app.controller('tableActionsController', function($scope, $http, $routeParams, $
                 success(function(data, status, headers, config) {
             alert('deleted ' + selectedItemIds.length + ' records');
             $scope.$parent.getPagedDataAsync();
-            $scope.gridOptions.selectedItems = [];
+            $scope.$parent.gridOptions.selectedItems.clear();
         }).
                 error(function(data, status, headers, config) {
             $scope.errors.errorList = data.errors;

@@ -17,30 +17,49 @@ app.service('gridOptionsService', function() {
                 that: null,
                 data: 'rowData',
                 totalServerItems: 'totalServerItems',
-                columnDefs: 'columns',
+                columnDefs: [],
+                enableRowSelection: true,
+                savedSortColumns: {},
+                enableSelectAll: true,
+                selectionRowHeaderWidth: '30',
                 keepLastSelected: false,
+                pagingPageSizes: [25, 50, 75],
+                pagingPageSize: 25,
+                useExternalPaging: true,
+                useExternalSorting: true,
                 pagingOptions: defaultPagingOptions,
-                enablePaging: true,
-                showFooter: true,
                 showFilter: true,
                 sortInfo: defaultSortOptions,
                 showColumnMenu: true,
-                useExternalSorting: false,
                 selectionChangedListeners: [],
                 addListener: function(listener) {
                     this.selectionChangedListeners.push(listener);
                 },
                 afterSelectionChange: function(viewName) {
                     return function(data) {
-                    var self = savedGridOptions[viewName];
+                        var self = savedGridOptions[viewName];
 
                         for (var i = 0; i < self.selectionChangedListeners.length; i++) {
                             var listener = self.selectionChangedListeners[i];
-                            listener(data.selectionProvider.selectedItems);
+                            listener(this.selectedItems.getAsArray());
                         }
                     };
                 }(viewName),
-                selectedItems: []
+                selectedItems: {
+                    items: {},
+                    getAsArray: function() {
+                        return Object.keys(this.items);
+                    },
+                    add: function(id) {
+                        this.items[id] = '1';
+                    },
+                    remove: function(id) {
+                        delete this.items[id];
+                    },
+                    clearSelection: function() {
+                        this.items = {};
+                    }
+                }
             };
             savedGridOptions[viewName].that = savedGridOptions[viewName];
         }

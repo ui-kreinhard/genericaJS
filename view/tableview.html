@@ -1,3 +1,9 @@
-    <body ng-controller="gridController">
-        <div ng-show="rights.canRead" class="gridStyle" ng-grid="gridOptions"></div>
-    </body>
+<body ng-controller="gridController">
+    <div ui-grid-selection  
+         ng-show="rights.canRead" 
+         ui-grid-paging 
+         class="grid"
+         ui-grid="gridOptions" style="height: 95vh">
+        
+    </div>
+</body>

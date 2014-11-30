@@ -1,12 +1,48 @@
-app.controller('gridController', function($scope, $http, $routeParams, gridOptionsService) {
-    
-    var selectionChangedListeners = [];
+app.controller('gridController', function($scope, $http, $routeParams, gridOptionsService, uiGridConstants) {
 
     var columns = [];
     var rowData = [];
     var viewName = $routeParams.viewName;
 
     $scope.gridOptions = gridOptionsService.getGridOptions(viewName);
+    var outerScope = $scope;
+
+    $scope.gridOptions.onRegisterApi = function(gridApi) {
+        $scope.gridApi = outerScope.gridApi = gridApi;
+
+        $scope.gridApi.core.on.renderingComplete($scope, function() {
+            $scope.gridApi.core.on.sortChanged($scope, function(grid, sortColumns) {
+                var savedSortInfo = {
+                    fields: [],
+                    directions: []
+                };
+                angular.forEach(sortColumns, function(value) {
+                    savedSortInfo.fields.push(value.field);
+                    savedSortInfo.directions.push(value.sort.direction);
+                });
+                angular.copy(savedSortInfo, $scope.sortOptions);
+                angular.copy(savedSortInfo, $scope.gridOptions.sortOptions);
+
+                $scope.gridOptions.savedSortColumns = sortColumns;
+                $scope.getPagedDataAsync();
+            });
+            gridApi.paging.on.pagingChanged($scope, function(newPage, pageSize) {
+                $scope.pagingOptions.currentPage = newPage;
+                $scope.pagingOptions.pageSize = pageSize;
+                $scope.getPagedDataAsync();
+            });
+            gridApi.selection.on.rowSelectionChanged($scope, function(row) {
+                if(row.isSelected) {
+                    $scope.gridOptions.selectedItems.add(row.entity.id);
+                } else {
+                    $scope.gridOptions.selectedItems.remove(row.entity.id);
+                }
+                $scope.gridOptions.afterSelectionChange(viewName);
+            });
+        });
+        gridApi.core.raise.sortChanged(gridApi.grid, $scope.gridOptions.sortOptions);
+    };
+
 
     $scope.columns = [];
     $scope.rights = {
@@ -20,15 +56,12 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
     $scope.pagingOptions = $scope.gridOptions.pagingOptions;
 
     $scope.sortOptions = $scope.gridOptions.sortInfo;
-    var savedSortInfo =  angular.copy($scope.gridOptions.sortInfo);
-    $scope.addListener = function(listener) {
-        $scope.gridOptions.addListener(listener);
-    };
+    var savedSortInfo = angular.copy($scope.gridOptions.sortInfo);
+  
 
-    var watcherAdded = false;
 
     $scope.getPagedDataAsync = function() {
-        
+
         var httpParameters = {
             tableName: viewName,
             page: $scope.pagingOptions.currentPage,
@@ -48,7 +81,7 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
                     columns = [];
 
                     columns = data.schema;
-                    $scope.totalServerItems = data.dataCount;
+                    $scope.gridOptions.totalItems = data.dataCount;
                     $scope.rights.canDelete = data.rights.canDelete;
                     $scope.rights.canInsert = data.rights.canInsert;
                     $scope.rights.canRead = data.rights.canRead;
@@ -75,36 +108,29 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
                         });
                         rowData.push(singleRow);
                     });
-$scope.columns = columns;
-$scope.$emit('loadedTableData');
+                    $scope.gridOptions.columnsDefs = columns;
+
+                    // merge back saved sort infos, so we can have here the default fuckup
+                    var i = 0;
+                    angular.forEach($scope.gridOptions.sortInfo.fields, function(value) {
+                        angular.forEach($scope.gridOptions.columnDefs, function(valueInner) {
+                            if (value == valueInner.name) {
+                                valueInner.sort = {
+                                    direction: $scope.gridOptions.sortInfo.directions[i],
+                                    priority: i
+                                }
+                                i++;
+                            } else {
+                                valueInner.sort = null;
+                            }
+                        });
+                    });
 
                     $scope.rowData = rowData;
-                    //    $scope.sortOptions.columns = columns;
-                     if (!watcherAdded) {
-                        $scope.$watch('sortOptions', function(newVal, oldVal) {
-                            if (newVal !== oldVal) {
-                                $scope.getPagedDataAsync();
-                            }
-                        }, true);
-                        watcherAdded = true;
-                    }
-                    if (!$scope.$$phase) {
-                        $scope.$apply();
-                    }
                 }).
                 error(function(data, status, headers, config) {
             console.log(status);
         });
     };
-
-    $scope.getPagedDataAsync($scope.pagingOptions.pageSize, $scope.pagingOptions.currentPage);
-
-    $scope.$watch('pagingOptions', function(newVal, oldVal) {
-        if (newVal !== oldVal || newVal.currentPage !== oldVal.currentPage || newVal.pageSize !== oldVal.pageSize) {
-            // its the complete wrong place, but we have to store back the saved sort info here. 
-            // the problem is, that ng-grid clears the sortinfos
-            angular.copy(savedSortInfo, $scope.gridOptions.sortInfo);
-            $scope.getPagedDataAsync();
-        }
-    }, true);
+    $scope.getPagedDataAsync();
 });
