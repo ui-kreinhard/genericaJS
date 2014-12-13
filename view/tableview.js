@@ -5,12 +5,45 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
     var viewName = $routeParams.viewName;
 
     $scope.gridOptions = gridOptionsService.getGridOptions(viewName);
+    $scope.saveReOrder = false;
     var outerScope = $scope;
 
     $scope.gridOptions.onRegisterApi = function(gridApi) {
         $scope.gridApi = outerScope.gridApi = gridApi;
 
         $scope.gridApi.core.on.renderingComplete($scope, function() {
+            $scope.gridApi.colMovable.on.columnPositionChanged($scope, function() {
+                if (!$scope.saveReOrder) {
+                    return;
+                }
+                var tableNameSchema = viewName.split(".");
+                var dataToBeSent = {
+                    formElements: [],
+                    table_name: tableNameSchema[1],
+                    table_schema: tableNameSchema[0]
+                };
+
+                // ignore first column
+                angular.forEach(gridApi.grid.columns.slice(1), function(value, key) {
+                    var entry = {
+                        column_name: value.colDef.name,
+                        id: viewName,
+                        table_name: dataToBeSent.table_name,
+                        table_schema: dataToBeSent.table_schema
+                    };
+                    dataToBeSent.formElements.push(entry);
+                });
+                $http({
+                    method: 'POST',
+                    data: dataToBeSent,
+                    url: '/update_formelements_order'
+                }).
+                        success(
+                        function(data, status, headers, config) {
+                        }).
+                        error(function(data, status, headers, config) {
+                });
+            });
             $scope.gridApi.core.on.sortChanged($scope, function(grid, sortColumns) {
                 var savedSortInfo = {
                     fields: [],
@@ -32,7 +65,7 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
                 $scope.getPagedDataAsync();
             });
             gridApi.selection.on.rowSelectionChanged($scope, function(row) {
-                if(row.isSelected) {
+                if (row.isSelected) {
                     $scope.gridOptions.selectedItems.add(row.entity.id);
                 } else {
                     $scope.gridOptions.selectedItems.remove(row.entity.id);
@@ -57,7 +90,7 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
 
     $scope.sortOptions = $scope.gridOptions.sortInfo;
     var savedSortInfo = angular.copy($scope.gridOptions.sortInfo);
-  
+
 
 
     $scope.getPagedDataAsync = function() {
@@ -86,6 +119,7 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
                     $scope.rights.canInsert = data.rights.canInsert;
                     $scope.rights.canRead = data.rights.canRead;
                     $scope.rights.canUpdate = data.rights.canUpdate;
+                    $scope.rights.canCustomize = data.rights.canCustomize;
                     if (data.data.length <= 0) {
                         var singleDummyRow = {};
                         var i = 0;
@@ -108,6 +142,7 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
                         });
                         rowData.push(singleRow);
                     });
+
                     $scope.gridOptions.columnsDefs = columns;
 
                     // merge back saved sort infos, so we can have here the default fuckup
@@ -127,6 +162,27 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
                     });
 
                     $scope.rowData = rowData;
+                    if ($scope.rights.canCustomize) {
+                        var customizeMenuObject = {
+                            title: 'Enable Saving Order',
+                        };
+                        customizeMenuObject.action = function(customizeMenuObject) {
+                            var that = customizeMenuObject;
+                            return function($event) {
+                                $scope.saveReOrder ^= 1;
+
+                                if ($scope.saveReOrder) {
+                                    that.title = 'Disable Saving Order';
+                                } else {
+                                    that.title = 'Enable Saving Order';
+                                }
+                            };
+                        }(customizeMenuObject);
+
+                        $scope.gridOptions.gridMenuCustomItems.push(
+                                customizeMenuObject
+                                );
+                    }
                 }).
                 error(function(data, status, headers, config) {
             console.log(status);

@@ -81,7 +81,9 @@ exports.dataDao = function(connection) {
                             if (result.priv == 'DELETE') {
                                 response.rights.canDelete = true;
                             }
-
+                            if(result.can_customize) {
+                                response.rights.canCustomize = true;
+                            }
                         },
                         params.errorHandler,
                         endQuery
