@@ -178,10 +178,11 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
                                 }
                             };
                         }(customizeMenuObject);
-
-                        $scope.gridOptions.gridMenuCustomItems.push(
-                                customizeMenuObject
-                                );
+                        if ($scope.gridOptions.gridMenuCustomItems.length <= 0) {
+                            $scope.gridOptions.gridMenuCustomItems.push(
+                                    customizeMenuObject
+                                    );
+                        }
                     }
                 }).
                 error(function(data, status, headers, config) {

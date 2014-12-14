@@ -1,11 +1,11 @@
 app.controller('autoFormController', function($scope, $http, $routeParams, returnPageService) {
-    
+
     $scope.model = {};
     $scope.errors = {
-	errorList: [],
-	hasErrors: function() {
-		return this.errorList.length > 0;
-	},
+        errorList: [],
+        hasErrors: function() {
+            return this.errorList.length > 0;
+        },
     };
     var httpParameters = {
         tableName: $routeParams.viewName
@@ -19,9 +19,9 @@ app.controller('autoFormController', function($scope, $http, $routeParams, retur
         },
         url: '../formdata'
     }).
-    success(
+            success(
             function(data, status, headers, config) {
-	  	$scope.errors.errorList = [];
+                $scope.errors.errorList = [];
                 rowData = [];
                 columns = [];
                 columns = data.schema;
@@ -36,8 +36,9 @@ app.controller('autoFormController', function($scope, $http, $routeParams, retur
                 }
             }).
             error(function(data, status, headers, config) {
-		$scope.errors.errorList = [];
-		$scope.errors.errorList = data.errors;
+        $scope.errors.errorList = [];
+
+        $scope.errors.errorList = data.errors;
     });
 
 
@@ -51,12 +52,17 @@ app.controller('autoFormController', function($scope, $http, $routeParams, retur
             },
             url: '../insert_or_update'
         }).
-        success(function(data, status, headers, config) {
-		$scope.errors.errorList = [];
-                returnPageService.goToReturnPage();
+                success(function(data, status, headers, config) {
+            $scope.errors.errorList = [];
+            returnPageService.goToReturnPage();
         }).
-        error(function(data, status, headers, config) {
-            $scope.errors.errorList = data.errors;
+                error(function(data, status, headers, config) {
+            $scope.errors.errorList = [];
+            angular.forEach(data.errors, function(value, key) {
+                if (value.check == 1) {
+                    $scope.errors.errorList.push(value);
+                }
+            });
         });
     };
 });
@@ -90,8 +96,10 @@ app.directive('autoform', function($compile) {
                     retStr += '<textarea class="form-control" class="also" style="resize:vertical; width: 100%; height: 50px "  ng-model="model.' + field + '" id="' + field + '"></textarea>';
                 }
                 break;
+            case 'date':
+            case 'timestamp with time zone':
             case 'timestamp without time zone':
-                retStr += ' <input class="form-control" style="width: 100%" type="text" ng-model="model.' + field + '"  bs-datepicker>';
+                retStr += ' <input class="form-control" style="width: 100%" type="text" ng-model="model.' + field + '"  bs-datepicker data-date-type="iso">';
                 break;
             case 'boolean':
                 retStr += '<input style="width: 100%" type="checkbox" ng-model="model.' + field + '" id="' + field + '"></input>';

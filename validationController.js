@@ -1,5 +1,7 @@
 
 exports.validatonController = function(dataDao, connection) {
+        var isNotDefined = require('./modules/utils.js').utils.isNotDefined;
+
 	var privateMethods = {
 		encloseInTicks: function(stringToBeTicked) {
 			return "'" + stringToBeTicked + "'";
@@ -14,26 +16,47 @@ exports.validatonController = function(dataDao, connection) {
 			});
 		},
 		createCheckSQL: function(rawCheckConditions, valuesP) {
+                        console.log('values are');
+                        console.log(valuesP);
 			var values = [];
+                        var checkConditionsIndexed = {};
+                        
+                        for(var i=0;i<rawCheckConditions.length;i++) {
+                            var singleValue = rawCheckConditions[i];
+                            checkConditionsIndexed[singleValue.column_name] = singleValue;
+                        }
+                        
+                        
 			for(var i=0;i<rawCheckConditions.length;i++) {
 				var singleValue = rawCheckConditions[i];
+                                
 				values.push({
 					errorMessage: singleValue.error_msg,
 					columnName: singleValue.column_name,
 					value: valuesP[singleValue.column_name],
 					checkCondition: singleValue.check_clause,
+                                        dataType: singleValue.data_type,
 					createWithPart: function() {
-                                                var returnStr = privateMethods.encloseInTicks(this.value) + '::text' + ' as ' + this.columnName;
+                                            var value = privateMethods.encloseInTicks(this.value);
+                                                if(this.columnName==null) {
+                                                    return;
+                                                }
+                                                if(isNotDefined(this.value)) {
+                                                    value = null;
+                                                }
+                                                var returnStr = value + '::' + this.dataType + ' as ' + this.columnName;
                                                 return returnStr;
                                         },
                                         createSelectPart: function() {
-                                                var returnStr = 'select count(*) as is_error, ' + privateMethods.encloseInTicks(this.columnName) + ' as column_to_check,' + privateMethods.encloseInTicks(this.errorMessage) + ' as errorMessage'  +' from ' + 'to_check ' + ' where ' + this.checkCondition;
+                                                var isError = '1-count(*)';
+                                                if(this.checkCondition==null) {
+                                                    isError = 0
+                                                }
+                                                var returnStr = 'select ' + isError + ' as is_error, ' + privateMethods.encloseInTicks(this.columnName) + ' as column_to_check,' + privateMethods.encloseInTicks(this.errorMessage) + ' as errorMessage'  +' from ' + 'to_check ' + ' where ' + this.checkCondition;
                                                 return returnStr;
                                         }
 				});
 			}	
-			console.log();
-			console.log(values);
 			
 			
 			return function() {
@@ -72,7 +95,7 @@ exports.validatonController = function(dataDao, connection) {
 					var isOk = true;
 					for(var i=0;i<result.length;i++) {
 						var resultElement = result[i];
-						if(resultElement.check==0) {
+						if(resultElement.check==1) {
 							isOk = false;
 							break;
 						}
