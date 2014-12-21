@@ -3,3 +3,7 @@
     max-width: 100%; 
     height: 300px
 }
+
+body {
+    margin: 10px
+}
