@@ -4,6 +4,8 @@ app.controller('menuController', function($scope, $http, $routeParams, $location
     };
     menuElementService.registerController(this);
 
+    $scope.predicate = '';
+
     $scope.menuName = 'menu_view';
     $scope.menu = {
         s: true,
@@ -12,7 +14,7 @@ app.controller('menuController', function($scope, $http, $routeParams, $location
         }
     };
 
-    $scope.options = {
+    $scope.treeOptions = {
         nodeChildren: "children",
         dirSelectable: false,
         injectClasses: {

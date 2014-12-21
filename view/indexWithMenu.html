@@ -6,7 +6,6 @@
         <link rel="stylesheet" type="text/css" href="css/style.css" />
         <link rel="stylesheet" href="css/bootstrap.min.css">
         <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css">
-        <link rel="stylesheet" href="libs/angularjs-jquery/css/jquery-ui.css"/>
 
 
         <script type="text/javascript" src="libs/jquery.min.js"></script>
@@ -14,12 +13,12 @@
         <script type="text/javascript" src="libs/ng-grid.js"></script>        
         <script type="text/javascript" src="libs/angular-route.js"></script>
         <script type="text/javascript" src="libs/angular-resource.js"></script>
-           <script src="libs/ui-grid-unstable.js"></script>
-    <link rel="stylesheet" href="libs/ui-grid-unstable.css" type="text/css"> 
+        <script src="libs/ui-grid-unstable.js"></script>
+        <link rel="stylesheet" href="libs/ui-grid-unstable.css" type="text/css"> 
         <script type="text/javascript" src="bower_components/angular-tree-control/angular-tree-control.js"></script>
         <link rel="stylesheet" type="text/css" href="bower_components/angular-tree-control/css/tree-control.css">
         <link rel="stylesheet" type="text/css" href="bower_components/angular-tree-control/css/tree-control-attribute.css">
-        
+
 
 
         <script type="text/javascript" src="main.js"></script>
@@ -37,32 +36,33 @@
         <script type="text/javascript" src="returnPageService.js"></script>
         <script type="text/javascript" src="menuElementService.js"></script>
 
-        
-              
+
+
         <script src="bower_components/angular-strap/dist/angular-strap.min.js"></script>
         <script src="bower_components/angular-strap/dist/angular-strap.tpl.min.js"></script>
-	<script src="bower_components/ng-file-upload/angular-file-upload-shim.min.js"></script> 
+        <script src="bower_components/ng-file-upload/angular-file-upload-shim.min.js"></script> 
         <script src="bower_components/ng-file-upload/angular-file-upload.min.js"></script> 
 
-	
-	<script type="text/javascript" src="menuController.js"></script>
+
+        <script type="text/javascript" src="menuController.js"></script>
     </head>
     <body>
-	<table style="width:100%">
-	<tr><td valign="top" width="15%"  ng-controller="menuController" >
-	<treecontrol class="tree-classic"
-	   tree-model="menuItems"
-          
-	   options="treeOptions"
-	   on-selection="selectedNode(node)"
-	   selected-node="">
-	   {{node.menulabel}}
-	</treecontrol>
-	</td><td valign="top">  
-        <div ng-view>
+        <table style="width:100%">
+            <tr><td valign="top" width="15%"  ng-controller="menuController" >
+                    <input type="text" ng-model="predicate" placeholder="Search...">
+            <treecontrol class="tree-classic"
+                         tree-model="menuItems" filter-expression="predicate" filter-comparator="comparator"
 
-        </div>
-	</td>
-	</tr></table>
-    </body>
+                         options="treeOptions"
+                         on-selection="selectedNode(node)"
+                         selected-node="">
+                {{node.menulabel}}
+            </treecontrol>
+        </td><td valign="top">  
+            <div ng-view>
+
+            </div>
+        </td>
+    </tr></table>
+</body>
 </html>
