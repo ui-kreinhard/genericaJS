@@ -22,7 +22,8 @@ app.factory('authHttpInterceptor', function($q, $location) {
                 case 401:
                 case 403:
                     if ($location.$$url != '/login') {
-                        $location.path('/login');
+                        location.href = location.pathname + "#/login";
+                        location.reload(true);
                     }
                     return $q.reject(rejection);
                     break;

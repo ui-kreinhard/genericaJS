@@ -5,6 +5,7 @@ app.controller('menuController', function($scope, $http, $routeParams, $location
     menuElementService.registerController(this);
 
     $scope.predicate = '';
+    $scope.expandedNodes = [];
 
     $scope.menuName = 'menu_view';
     $scope.menu = {
@@ -37,5 +38,22 @@ app.controller('menuController', function($scope, $http, $routeParams, $location
 
     $scope.changeMenu = function() {
         menuElementService.reloadMenu($scope.menuName);
+    };
+
+    $scope.expandAll = function() {
+        $scope.expandedNodes = $scope.menuItems;
+
+    };
+
+    $scope.collapseAll = function() {
+        $scope.expandedNodes = [];
+    };
+
+    $scope.checkTypeAhead = function() {
+        if ($scope.predicate.length > 0) {
+            $scope.expandAll();
+        } else {
+            $scope.collapseAll();
+        }
     };
 });
