@@ -25,7 +25,7 @@ var bodyParser = require('body-parser');
 var multer = require('multer')
 
 // parse application/json and application/x-www-form-urlencoded
-app.use(bodyParser());
+app.use(bodyParser({limit: '50mb'}));
 // parse application/vnd.api+json as json
 app.use(bodyParser.json({type: 'application/json'}));
 app.use(multer({dest: './uploads/'}));

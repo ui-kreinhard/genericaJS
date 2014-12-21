@@ -96,6 +96,9 @@ app.directive('autoform', function($compile) {
                     retStr += '<textarea class="form-control" class="also" style="resize:vertical; width: 100%; height: 50px "  ng-model="model.' + field + '" id="' + field + '"></textarea>';
                 }
                 break;
+	    case 'xml':
+                retStr += '<textarea class="form-control" class="also" style="resize:vertical; width: 100%; height: 50px "  ng-model="model.' + field + '" id="' + field + '"></textarea>';
+		break;
             case 'date':
             case 'timestamp with time zone':
             case 'timestamp without time zone':
