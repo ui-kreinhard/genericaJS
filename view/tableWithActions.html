@@ -1,9 +1,9 @@
  <div 
     ng-controller="tableActionsController">
-        <a ng-show="rights.canInsert" ng-href="{{createUrl}}"><i class="fa fa-plus-square-o"></i></a>
-        <a ng-show="rights.canUpdate" href="{{editUrl}}"><i class="fa fa-edit"></i></a>
-        <a ng-show="rights.canDelete" ng-click="delete()"><i class="fa fa-minus-square-o"></i></a>
-        <a ng-href="{{exportToCsv}}"><i class="fa fa-cloud-download"></i></a>
-        <a ng-show="rights.canInsert" ng-href="{{importCsv}}"><i class="fa fa-cloud-upload"></i></a>
+        <a ng-show="rights.canInsert" ng-href="{{createUrl}}"><i class="fa fa-plus-square-o" style="font-size: 18px"></i></a>
+        <a ng-show="rights.canUpdate" href="{{editUrl}}"><i class="fa fa-edit" style="font-size: 18px"></i></a>
+        <a ng-show="rights.canDelete" ng-click="delete()"><i class="fa fa-minus-square-o" style="font-size: 18px"></i></a>
+        <a ng-href="{{exportToCsv}}"><i class="fa fa-cloud-download" style="font-size: 18px"></i></a>
+        <a ng-show="rights.canInsert" ng-href="{{importCsv}}"><i class="fa fa-cloud-upload" style="font-size: 18px"></i></a>
 </div>
 <div class="slide-animate" ng-include="'tableview.html'"></div>
