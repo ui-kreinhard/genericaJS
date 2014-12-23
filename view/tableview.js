@@ -91,7 +91,9 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
     $scope.sortOptions = $scope.gridOptions.sortInfo;
     var savedSortInfo = angular.copy($scope.gridOptions.sortInfo);
 
-
+    $scope.refresh = function() {
+      $scope.getPagedDataAsync();  
+    };
 
     $scope.getPagedDataAsync = function() {
 
