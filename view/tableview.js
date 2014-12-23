@@ -10,7 +10,7 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
 
     $scope.gridOptions.onRegisterApi = function(gridApi) {
         $scope.gridApi = outerScope.gridApi = gridApi;
-
+        $scope.gridOptions.selectedItems.clearSelection();
         $scope.gridApi.core.on.renderingComplete($scope, function() {
             $scope.gridApi.colMovable.on.columnPositionChanged($scope, function() {
                 if (!$scope.saveReOrder) {

@@ -14,10 +14,10 @@ app.controller('tableActionsController', function($scope, $http, $routeParams, $
     $scope.rights = $scope.$parent.rights;
     $scope.$parent.gridOptions.addListener(function(selectedItems) {
         selectedItemIds = selectedItems;
-        var lastIndex = selectedItems.length - 1;
+        
 
         if (selectedItems.length > 0) {
-            $scope.editUrl = editUrlTemplate + selectedItems[lastIndex];
+            $scope.editUrl = editUrlTemplate + selectedItems[0];
         } else {
             $scope.editUrl = '#' + $location.path();
         }
