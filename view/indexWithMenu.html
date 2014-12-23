@@ -44,19 +44,21 @@
 
 
         <script type="text/javascript" src="menuController.js"></script>
-                <link rel="stylesheet" type="text/css" href="css/style.css" />
+        <link rel="stylesheet" type="text/css" href="css/style.css" />
 
     </head>
     <body>
         <table style="width:100%">
             <tr><td valign="top" width="15%"  ng-controller="menuController" >
-                    <input type="text" ng-model="predicate" placeholder="Search..." ng-keyup="checkTypeAhead()">
-                    <br/>
-        <a ng-click="expandAll()"><i class="fa fa-plus-square-o" style="font-size: 18px"></i></a>
-        <a ng-click="collapseAll()"><i class="fa fa-minus-square-o" style="font-size: 18px"></i></a>
+                    <div ng-show="showSearch">
+                        <input type="text" ng-model="predicate" placeholder="Search..." ng-keyup="checkTypeAhead()">
+                        <br/>
+                        <a ng-click="expandAll()"><i class="fa fa-toggle-down" style="font-size: 16px"></i></a>
+                        <a ng-click="collapseAll()"><i class="fa fa-toggle-up" style="font-size: 16px"></i></a>
+                    </div>
             <treecontrol class="tree-classic"
                          tree-model="menuItems" filter-expression="predicate" filter-comparator="comparator"
-                        expanded-nodes="expandedNodes"
+                         expanded-nodes="expandedNodes"
                          options="treeOptions"
                          on-selection="selectedNode(node)"
                          selected-node="">

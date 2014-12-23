@@ -1,5 +1,7 @@
 app.controller('menuController', function($scope, $http, $routeParams, $location, menuElementService) {
+    $scope.showSearch = false;
     this.assignNewMenu = function(menuItems) {
+        $scope.showSearch = true;
         $scope.menuItems = menuItems;
     };
     menuElementService.registerController(this);
