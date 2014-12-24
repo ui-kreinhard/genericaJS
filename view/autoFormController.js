@@ -102,7 +102,10 @@ app.directive('autoform', function($compile) {
             case 'date':
             case 'timestamp with time zone':
             case 'timestamp without time zone':
-                retStr += ' <input class="form-control" style="width: 100%" type="text" ng-model="model.' + field + '"  bs-datepicker data-date-type="iso">';
+                retStr += 
+                        ' <input class="form-control" type="text" ng-model="model.' + field + '"  bs-datepicker data-date-type="iso">';
+                retStr += 
+                        '<input class="form-control" type="text" data-time-format="HH:mm" ng-model="model.' + field + '"  bs-timepicker data-date-type="iso">';
                 break;
             case 'boolean':
                 retStr += '<input style="width: 100%" type="checkbox" ng-model="model.' + field + '" id="' + field + '"></input>';

@@ -5,13 +5,30 @@ var app = angular.module('generica', ['ui.grid', 'ui.grid.paging', 'ui.grid.auto
 
 
 
-app.factory('authHttpInterceptor', function($q, $location) {
+app.factory('authHttpInterceptor', function ($q, $location) {
+    var loadingDiv = $('#loadingDiv');
+    
+    if (loadingDiv == null) {
+        loadingDiv = {};
+        loadingDiv.show = function () {
+        };
+        loadingDiv.hide = function () {
+        };
+    }
+    
+    loadingDiv.hide();
+    
     return {
-        'response': function(response) {
-            // default handling
+        'request': function (config) {
+            loadingDiv.show();
+            return config;
+        },
+        'response': function (response) {
+            loadingDiv.hide();
             return response || $q.when(response);
         },
-        'responseError': function(rejection) {
+        'responseError': function (rejection) {
+            loadingDiv.hide();
             // prevent redirect loop
             console.log($q);
             console.log($location);
@@ -34,6 +51,6 @@ app.factory('authHttpInterceptor', function($q, $location) {
 
         }
     };
-}).config(function($provide, $httpProvider) {
+}).config(function ($provide, $httpProvider) {
     return $httpProvider.interceptors.push('authHttpInterceptor');
 });
