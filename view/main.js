@@ -1,7 +1,6 @@
 var menuName = 'view_menu';
 
-var app = angular.module('generica', ['ui.grid', 'ui.grid.paging', 'ui.grid.autoResize', 'ui.grid.moveColumns', 'ui.grid.selection', 'ui.grid.pinning', 'ui.grid.resizeColumns', 'ngGrid', 'ngRoute', 'ngResource', 'mgcrea.ngStrap', 'treeControl', 'angularFileUpload']);
-
+var app = angular.module('generica', ['hljs','ui.grid', 'ui.grid.paging', 'ui.grid.autoResize', 'ui.grid.moveColumns', 'ui.grid.selection', 'ui.grid.pinning', 'ui.grid.resizeColumns', 'ngGrid', 'ngRoute', 'ngResource', 'mgcrea.ngStrap', 'treeControl', 'angularFileUpload']);
 
 
 
@@ -51,6 +50,10 @@ app.factory('authHttpInterceptor', function ($q, $location) {
 
         }
     };
-}).config(function ($provide, $httpProvider) {
+}).config(function ($provide, $httpProvider, hljsServiceProvider) {
+      hljsServiceProvider.setOptions({
+    // replace tab with 4 spaces
+    tabReplace: '    '
+  });
     return $httpProvider.interceptors.push('authHttpInterceptor');
 });

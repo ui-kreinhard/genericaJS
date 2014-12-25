@@ -20,6 +20,7 @@ exports.dataDao = function(connection) {
             if (typeof params.orderBy == 'string') {
                 orderByString = ' ORDER BY ' + params.orderBy + ' ' + params.orderByDirection;
             } else {
+                var newOrderByArray = [];
                 for (var i = 0; i < params.orderBy.length; i++) {
                     newOrderByArray.push(params.orderBy[i] + ' ' + params.orderByDirection[i]);
                 }

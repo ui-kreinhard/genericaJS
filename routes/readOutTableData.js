@@ -28,7 +28,7 @@ exports.readOutTableData = function(app, dataDaoHandler) {
                 orderByDirections = [];
                 orderByDirections.push(query.orderByDirection);
             } else {
-                orderBy = query.orderByDirection;
+                orderByDirections = query.orderByDirection;
             }
 
             for (var i = 0; i < orderByDirections.length; i++) {

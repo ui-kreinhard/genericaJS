@@ -61,7 +61,12 @@ app.config(function($routeProvider) {
             {
                 templateUrl: 'changeMenu.html',
                 controller: 'menuController'
-            })        
+            }).
+            when('/show_sql',
+            {
+                templateUrl: 'showSql.html',
+                controller: 'menuController'
+            })   
             ;
 });
 
