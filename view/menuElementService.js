@@ -17,10 +17,10 @@ app.service('menuElementService', function($http) {
             };
 
             idMappedData[value.id].hasLink = function() {
-                return this.children.length <= 0;
+                return !this.hasNoLink();
             };
             idMappedData[value.id].hasNoLink = function() {
-                return !this.hasLink();
+                return value.link == null || value.link=='';
             };
 
         });

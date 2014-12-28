@@ -19,7 +19,7 @@ app.controller('menuController', function($scope, $http, $routeParams, $location
 
     $scope.treeOptions = {
         nodeChildren: "children",
-        dirSelectable: false,
+        dirSelectable: true,
         injectClasses: {
             ul: "a1",
             li: "a2",
