@@ -1,7 +1,8 @@
 <body ng-controller="gridController">
-<a ng-click="refresh()"><i class="fa fa-refresh" style="font-size: 18px"></i></a>
+    <span><a ng-click="refresh()"><i class="fa fa-refresh" style="font-size: 18px"></i></a></span>
     <div ui-grid-selection  
          ng-show="rights.canRead" 
+         ui-grid-auto-resize
          ui-grid-paging 
          ui-grid-pinning
          ui-grid-resize-columns

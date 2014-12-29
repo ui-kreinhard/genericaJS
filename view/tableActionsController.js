@@ -6,7 +6,7 @@ app.controller('tableActionsController', function($scope, $http, $routeParams, $
     var selectedItemIds = [];
 
     $scope.editUrl = '#' + $location.path();
-    $scope.createUrl = '#autoform/' + viewName;
+    $scope.createUrl = '#autoform/' + viewName + '/0';
     $scope.deleteUrl = '#autoform/delete';
     $scope.exportToCsv = "../exportToCsv?tableName=" + viewName;
     $scope.importCsv = "#/upload_csv/" + viewName;

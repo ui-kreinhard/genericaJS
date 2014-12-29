@@ -1,70 +1,83 @@
-app.controller('autoFormController', function($scope, $http, $routeParams, returnPageService) {
+app.controller('autoFormController', function($scope, $http, $routeParams, returnPageService,gridOptionsService) {
+    var viewName = $routeParams.viewName;
+
+    $scope.init = function(id) {
+        $scope.selectedId = id;
+        var httpParameters = {
+            tableName: $scope.selectedId
+
+        };
+        $http({
+            method: 'GET',
+            params: {
+                tableName: $routeParams.viewName,
+                id: $scope.selectedId
+            },
+            url: '../formdata'
+        }).
+                success(
+                function(data, status, headers, config) {
+                    $scope.errors.errorList = [];
+                    rowData = [];
+                    columns = [];
+                    columns = data.schema;
+
+                    $scope.dataSchema = data.schema;
+                    if (data.data[0]) {
+                        var valuesOfRecord = data.data[0];
+                        for (var propertyName in valuesOfRecord) {
+                            var value = valuesOfRecord[propertyName];
+                            $scope.model[propertyName] = value;
+                        }
+                    }
+                }).
+                error(function(data, status, headers, config) {
+            $scope.errors.errorList = [];
+
+            $scope.errors.errorList = data.errors;
+        });
+
+
+        $scope.submit = function(successHandler) {
+            $http({
+                method: 'POST',
+                data: {
+                    data: $scope.model,
+                    tableName: $routeParams.viewName
+
+                },
+                url: '../insert_or_update'
+            }).
+                    success(function(data, status, headers, config) {
+                $scope.errors.errorList = [];
+                successHandler();
+            }).
+                    error(function(data, status, headers, config) {
+                $scope.errors.errorList = [];
+                angular.forEach(data.errors, function(value, key) {
+                    if (value.check == 1) {
+                        $scope.errors.errorList.push(value);
+                    }
+                });
+            });
+        };
+        $scope.$parent.$parent.registerSubController($scope.submit);
+    };
 
     $scope.model = {};
+
+
+
+
     $scope.errors = {
         errorList: [],
         hasErrors: function() {
             return this.errorList.length > 0;
-        },
+        }
     };
-    var httpParameters = {
-        tableName: $routeParams.viewName
-
-    };
-    $http({
-        method: 'GET',
-        params: {
-            tableName: $routeParams.viewName,
-            id: $routeParams.id
-        },
-        url: '../formdata'
-    }).
-            success(
-            function(data, status, headers, config) {
-                $scope.errors.errorList = [];
-                rowData = [];
-                columns = [];
-                columns = data.schema;
-
-                $scope.dataSchema = data.schema;
-                if (data.data[0]) {
-                    var valuesOfRecord = data.data[0];
-                    for (var propertyName in valuesOfRecord) {
-                        var value = valuesOfRecord[propertyName];
-                        $scope.model[propertyName] = value;
-                    }
-                }
-            }).
-            error(function(data, status, headers, config) {
-        $scope.errors.errorList = [];
-
-        $scope.errors.errorList = data.errors;
-    });
 
 
-    $scope.submit = function() {
-        $http({
-            method: 'POST',
-            data: {
-                data: $scope.model,
-                tableName: $routeParams.viewName
 
-            },
-            url: '../insert_or_update'
-        }).
-                success(function(data, status, headers, config) {
-            $scope.errors.errorList = [];
-            returnPageService.goToReturnPage();
-        }).
-                error(function(data, status, headers, config) {
-            $scope.errors.errorList = [];
-            angular.forEach(data.errors, function(value, key) {
-                if (value.check == 1) {
-                    $scope.errors.errorList.push(value);
-                }
-            });
-        });
-    };
 });
 
 app.directive('autoform', function($compile) {
@@ -96,15 +109,16 @@ app.directive('autoform', function($compile) {
                     retStr += '<textarea class="form-control" class="also" style="resize:vertical; width: 100%; height: 50px "  ng-model="model.' + field + '" id="' + field + '"></textarea>';
                 }
                 break;
-	    case 'xml':
+            case 'xml':
                 retStr += '<textarea class="form-control" class="also" style="resize:vertical; width: 100%; height: 50px "  ng-model="model.' + field + '" id="' + field + '"></textarea>';
-		break;
+                retStr += '<input class="form-control" type="file" ng-file-select="onXmlFileSelect($files,\'' + field + '\')">';
+                break;
             case 'date':
             case 'timestamp with time zone':
             case 'timestamp without time zone':
-                retStr += 
+                retStr +=
                         ' <input class="form-control" type="text" ng-model="model.' + field + '"  bs-datepicker data-date-type="iso">';
-                retStr += 
+                retStr +=
                         '<input class="form-control" type="text" data-time-format="HH:mm" ng-model="model.' + field + '"  bs-timepicker data-date-type="iso">';
                 break;
             case 'boolean':
@@ -125,11 +139,22 @@ app.directive('autoform', function($compile) {
         element.html(getTemplate(scope)).show();
         //   if (typeof scope.content.inputField != 'undefined') {
         // wire event listeners, this is important for client side validation
-        var modelName = "scope.$parent.model." + scope.content.field;
+//        var modelName = "scope.$parent.model." + scope.content.field;
         scope.$watch(modelName, function() {
             scope.$emit('fireTriggers', modelName);
         });
-        // }
+
+        scope.onXmlFileSelect = function($files, modelName) {
+            var reader = new FileReader();
+            reader.onload = function(onLoadEvent) {
+                var readText = onLoadEvent.target.result;
+                scope.model[modelName] = 'ab';
+                scope.model[modelName] = readText;
+                $('#' + modelName).val(readText);
+                scope.$emit('fireTriggers', "model."  + modelName);
+            };
+            reader.readAsText($files[0]);
+        };
         $compile(element.contents())(scope);
     };
 

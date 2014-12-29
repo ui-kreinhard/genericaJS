@@ -1,37 +1,41 @@
 
-<body ng-controller="gridController">
+<body >
 <legend>autoform</legend>  
-<div ng-show="errors.hasErrors()" class="alert alert-danger" style="width: 25%">
-    <div ng-repeat="error in errors.errorList">
-        {{error.errormessage}}   
+
+<div class="ui-widget-content"
+     style="width: 50%;overflow: auto ;resize: horizontal;border: 1px solid #aaaaaa;
+     color: #222222;" opt:minWidth="20"  
+     id="formElementContainer"
+     >
+    <button ng-click="submitAllForms()">
+        Submit
+    </button>
+    <div  ng-controller="autoFormOverallController"  ng-repeat="id in ids" > 
+        <form  ng-controller="autoFormController" ng-init="init(id)"
+               >
+            <div ng-show="errors.hasErrors()" class="alert alert-danger" style="width: 25%">
+                <div ng-repeat="error in errors.errorList">
+                    {{error.errormessage}}   
+                </div>
+            </div>
+
+            <div id="formElementContainer"
+                 style="margin-bottom: 20px"
+                 >
+                <div 
+                    autoform
+                    formname="editForm" 
+                    disabledvar="formDisabled" 
+                    model="model"
+                    ng-repeat="field in dataSchema" 
+                    content="field"></div>
+            </div>
+
+
+        </form>              
     </div>
+    <button ng-click="submitAllForms()">
+        Submit
+    </button>
 </div>
-
-<form 
-    ng-submit="submit()"
-    >
-    <div class="ui-widget-content"
-         
-      
-        style="width: 500px;overflow: auto ;resize: horizontal;border: 1px solid #aaaaaa;
-        color: #222222;" opt:minWidth="20"  
-        id="formElementContainer"
-      
-   
-        >
-        <div id="formElementContainer"
-	 style="margin-bottom: 20px"
-          >
-            <div 
-                 autoform
-                 formname="editForm" 
-                 disabledvar="formDisabled" 
-                 model="model"
-                 ng-repeat="field in dataSchema" 
-                 content="field"></div>
-        </div>
-    </div>
-    <input type="submit" value="Submit"></input>
-</form>              
-
 </body>

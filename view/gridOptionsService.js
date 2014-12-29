@@ -2,8 +2,8 @@ app.service('gridOptionsService', function() {
     var savedGridOptions = {};
     this.getGridOptions = function(viewName) {
         var defaultPagingOptions = {
-            pageSizes: [2, 10, 20, 50, 100],
-            pageSize: 20,
+            pageSizes: [ 20, 50, 100,200,500,1000,5000],
+            pageSize: 100,
             currentPage: 1
         };
         var defaultSortOptions = {
@@ -25,8 +25,8 @@ app.service('gridOptionsService', function() {
                 enableSelectAll: true,
                 selectionRowHeaderWidth: '30',
                 keepLastSelected: false,
-                pagingPageSizes: [25, 50, 75, 100, 200, 500, 5000],
-                pagingPageSize: 25,
+                pagingPageSizes: defaultPagingOptions.pageSizes,
+                pagingPageSize: defaultPagingOptions.pageSize,
                 useExternalPaging: true,
                 useExternalSorting: true,
                 pagingOptions: defaultPagingOptions,

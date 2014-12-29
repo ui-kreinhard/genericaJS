@@ -116,6 +116,7 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
                     columns = [];
 
                     columns = data.schema;
+            
                     $scope.gridOptions.totalItems = data.dataCount;
                     $scope.rights.canDelete = data.rights.canDelete;
                     $scope.rights.canInsert = data.rights.canInsert;
@@ -145,7 +146,7 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
                         rowData.push(singleRow);
                     });
 
-                    $scope.gridOptions.columnsDefs = columns;
+                    $scope.gridOptions.columnDefs = columns;
 
                     // merge back saved sort infos, so we can have here the default fuckup
                     var i = 0;
@@ -166,7 +167,7 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
                     $scope.rowData = rowData;
                     if ($scope.rights.canCustomize) {
                         var customizeMenuObject = {
-                            title: 'Enable Saving Order',
+                            title: 'Enable Saving Order'
                         };
                         customizeMenuObject.action = function(customizeMenuObject) {
                             var that = customizeMenuObject;

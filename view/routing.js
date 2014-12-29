@@ -15,7 +15,7 @@ app.config(function($routeProvider) {
             }).
             when('/autoform/:viewName/:id',
             {
-                controller: 'autoFormController',
+                controller: 'autoFormOverallController',
                 templateUrl: 'autoForm.html'
             }).
             when('/autoform/:viewName',
