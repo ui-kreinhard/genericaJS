@@ -1,4 +1,6 @@
 exports.dataDaoHandler = function() {
+    var console = process.console;
+
     var dataDaos = {};
     return {
         add: function(sessionID, dataDao) {
@@ -16,7 +18,8 @@ exports.dataDaoHandler = function() {
             return dataDaos[sessionID].lastAction;
         },
         get: function(sessionID) {
-            console.log('get executed');
+            console.tag("SESSION").log('Refreshed Session ' + sessionID);
+
             if (dataDaos[sessionID] == null) {
                 return null;
             }
@@ -34,8 +37,8 @@ exports.dataDaoHandler = function() {
                 if (typeof sessionID != 'function') {
                     var lastUpdateTime = this.getLastUpdate(sessionID);
                     ret.push({
-                       sessionID: sessionID,
-                       lastUpdateTime: lastUpdateTime
+                        sessionID: sessionID,
+                        lastUpdateTime: lastUpdateTime
                     });
                 }
             }

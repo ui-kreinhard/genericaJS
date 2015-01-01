@@ -1,5 +1,8 @@
-
+var scribe = require('scribe-js')();
 var config = require('./config.js').config();
+
+process.scribe = scribe;
+var console = process.console;
 
 var dataDaoHandler = require('./dataDaoHandler.js').dataDaoHandler();
 require('./sessionTimeoutHandler.js').sessionTimeoutHandler(dataDaoHandler, config.session.sessionTimeOut);
@@ -16,6 +19,10 @@ app.use(session({
     secret: generateSessionCrypto(),
     proxy: true
 }));
+app.use(scribe.express.logger());
+app.use('/logs', scribe.webPanel());
+
+
 var errorHandler = require('./modules/errorHandler.js').errorHandler;
 
 var isNotDefined = require('./modules/utils.js').utils.isNotDefined;
@@ -46,10 +53,14 @@ app.use(function(req, res, next) {
 });
 
 require("fs").readdirSync("./routes").forEach(function(file) {
-  var module = require("./routes/" + file);
-  process.stdout.write("loading module " + file + "....");
-  module[function() { for (var k in module) return k }()](app,dataDaoHandler);
-  process.stdout.write("done\n");
+    var module = require("./routes/" + file);
+
+    module[function() {
+        for (var k in module)
+            return k
+    }()](app, dataDaoHandler);
+    console.tag("NodeJsModules").log("loading module " + file + "....done");
+
 });
 
 
