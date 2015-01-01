@@ -8,6 +8,17 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
     $scope.saveReOrder = false;
     var outerScope = $scope;
 
+    var listeners = [];
+    var loadedTableData = function(data) {
+        angular.forEach(listeners, function(listener) {
+            listener(data);
+        });
+    };
+
+    $scope.addLoadListener = function(listener) {
+        listeners.push(listener);
+    };
+
     $scope.gridOptions.onRegisterApi = function(gridApi) {
         $scope.gridApi = outerScope.gridApi = gridApi;
         $scope.gridOptions.selectedItems.clearSelection();
@@ -92,7 +103,7 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
     var savedSortInfo = angular.copy($scope.gridOptions.sortInfo);
 
     $scope.refresh = function() {
-      $scope.getPagedDataAsync();  
+        $scope.getPagedDataAsync();
     };
 
     $scope.getPagedDataAsync = function() {
@@ -116,8 +127,9 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
                     columns = [];
 
                     columns = data.schema;
-            
+
                     $scope.gridOptions.totalItems = data.dataCount;
+
                     $scope.rights.canDelete = data.rights.canDelete;
                     $scope.rights.canInsert = data.rights.canInsert;
                     $scope.rights.canRead = data.rights.canRead;
@@ -187,6 +199,7 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
                                     );
                         }
                     }
+                    loadedTableData(data);
                 }).
                 error(function(data, status, headers, config) {
             console.log(status);

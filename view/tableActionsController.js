@@ -2,19 +2,32 @@ app.controller('tableActionsController', function($scope, $http, $routeParams, $
     var viewName = $routeParams.viewName;
     returnPageService.setReturnPage();
 
-    var editUrlTemplate = '#autoform/' + viewName + '/';
+    var editUrlTemplate = '';
+    var deleteView = $routeParams.viewName;
     var selectedItemIds = [];
 
-    $scope.editUrl = '#' + $location.path();
-    $scope.createUrl = '#autoform/' + viewName + '/0';
-    $scope.deleteUrl = '#autoform/delete';
-    $scope.exportToCsv = "../exportToCsv?tableName=" + viewName;
-    $scope.importCsv = "#/upload_csv/" + viewName;
+    $scope.$parent.addLoadListener(function(data) {
+        var tableActionsTmp = data.tableActions;
+        var dummy = {source_table_name: viewName, target_table_name: viewName};
+        // merge them together
+        var tableActions = {
+            INSERT: tableActionsTmp.INSERT || dummy,
+            UPDATE: tableActionsTmp.UPDATE || dummy,
+            DELETE: tableActionsTmp.DELETE || dummy
+        };
+        $scope.editUrl = '#' + $location.path();
+        editUrlTemplate = '#autoform/' + tableActions.UPDATE.target_table_name + '/' + tableActions.UPDATE.source_table_name + '/';
+        $scope.createUrl = '#autoform/' + tableActions.INSERT.target_table_name + '/' + tableActions.INSERT.source_table_name  + '/0';
+        $scope.deleteUrl = '#autoform/delete';
+        $scope.exportToCsv = "../exportToCsv?tableName=" + viewName;
+        $scope.importCsv = "#/upload_csv/" + viewName;
+    });
+
 
     $scope.rights = $scope.$parent.rights;
+
     $scope.$parent.gridOptions.addListener(function(selectedItems) {
         selectedItemIds = selectedItems;
-        
 
         if (selectedItems.length > 0) {
             $scope.editUrl = editUrlTemplate + selectedItems[0];
@@ -31,7 +44,7 @@ app.controller('tableActionsController', function($scope, $http, $routeParams, $
             method: 'POST',
             data: {
                 id: selectedItemIds,
-                tableName: $routeParams.viewName
+                tableName: deleteView
             },
             url: '../delete'
         }).

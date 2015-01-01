@@ -1,5 +1,5 @@
 app.controller('autoFormOverallController', function($scope, $http, $routeParams, returnPageService, gridOptionsService) {
-    var viewName = $routeParams.viewName;
+    var viewName = $routeParams.originViewName;
     var registeredForms = [];
     $scope.ids = gridOptionsService.getGridOptions(viewName).selectedItems.getAsArray();
     if($scope.ids.length <=0) {

@@ -13,7 +13,7 @@ app.config(function($routeProvider) {
 		templateUrl: 'tableWithActions.html',
 		controller: 'gridController'
             }).
-            when('/autoform/:viewName/:id',
+            when('/autoform/:viewName/:originViewName/:id',
             {
                 controller: 'autoFormOverallController',
                 templateUrl: 'autoForm.html'

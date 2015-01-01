@@ -1,7 +1,8 @@
 
 exports.dataDao = function(connection) {
+
     var validatonController = require('./validationController.js').validatonController(this, connection);
-    
+
 
     var getFilter = function(params) {
         var filter = ' WHERE 1=1 ';
@@ -65,11 +66,21 @@ exports.dataDao = function(connection) {
                         }
                 );
             },
+            getTableActions: function(endQuery) {
+                response.tableActions = {};
+                connection.query("select * from custom_table_actions where source_table_name = '" + params.tableName + "'",
+                        function(result) {
+                            response.tableActions[result.action_name] = result;
+                            
+                        },
+                        params.errorHandler,
+                        endQuery
+                        );
+            },
             getRights: function(endQuery) {
                 response.rights = {canRead: false, canInsert: false, canUpdate: false, canDelete: false};
                 connection.query("select * from table_rights where table_name = '" + params.tableName + "'",
                         function(result) {
-                            console.log(result);
                             if (result.priv == 'SELECT') {
                                 response.rights.canRead = true;
                             }
@@ -82,7 +93,7 @@ exports.dataDao = function(connection) {
                             if (result.priv == 'DELETE') {
                                 response.rights.canDelete = true;
                             }
-                            if(result.can_customize) {
+                            if (result.can_customize) {
                                 response.rights.canCustomize = true;
                             }
                         },
@@ -181,7 +192,7 @@ exports.dataDao = function(connection) {
                     };
                     // recognize if we have an id - if so, it has to be an update
                     if (typeof dataToInsert.id == 'undefined' || dataToInsert.id == null || dataToInsert.id == 'null' || dataToInsert.id == '') {
-                        if(typeof dataToInsert.id != 'undefined') {
+                        if (typeof dataToInsert.id != 'undefined') {
                             delete dataToInsert.id;
                         }
                         fillColumnsAndValues();
@@ -233,14 +244,16 @@ exports.dataDao = function(connection) {
                 data: []
             };
             var local = localFunctions(params, response);
-            local.getRights(function() {
-                local.getSchema(
-                        function() {
-                            local.getData(function() {
-                                local.getCount();
-                            });
-                        }
-                );
+            local.getTableActions(function() {
+                local.getRights(function() {
+                    local.getSchema(
+                            function() {
+                                local.getData(function() {
+                                    local.getCount();
+                                });
+                            }
+                    );
+                });
             });
         }
     };
