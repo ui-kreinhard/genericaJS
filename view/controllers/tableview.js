@@ -6,6 +6,7 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
 
     $scope.gridOptions = gridOptionsService.getGridOptions(viewName);
     $scope.saveReOrder = false;
+    $scope.filter = {};
     var outerScope = $scope;
 
     var listeners = [];
@@ -23,6 +24,27 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
         $scope.gridApi = outerScope.gridApi = gridApi;
         $scope.gridOptions.selectedItems.clearSelection();
         $scope.gridApi.core.on.renderingComplete($scope, function() {
+            var refreshIdTimeout;
+            $scope.gridApi.core.on.filterChanged($scope, function() {
+                var grid = this.grid;
+                $scope.filter = {};
+                
+                angular.forEach(grid.columns, function(column) {
+                    var filter = {
+                        term: column.filters[0].term,
+                        field: column.colDef.field,
+                        operator: 'LIKE'
+                    };
+                    if(typeof filter.term !='undefined' && filter.term!=null && filter.term!='') {
+                        $scope.filter[column.colDef.field] = filter;
+                    }
+                });
+                if(typeof refreshIdTimeout !='undefined') {
+                    clearTimeout(refreshIdTimeout);
+                }
+                
+                refreshIdTimeout = window.setTimeout($scope.getPagedDataAsync,400);
+            });
             $scope.gridApi.colMovable.on.columnPositionChanged($scope, function() {
                 if (!$scope.saveReOrder) {
                     return;
@@ -113,11 +135,12 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
             page: $scope.pagingOptions.currentPage,
             pageSize: $scope.pagingOptions.pageSize,
             orderBy: ($scope.sortOptions.fields ? $scope.sortOptions.fields : []),
-            orderByDirection: ($scope.sortOptions.directions ? $scope.sortOptions.directions : [])
+            orderByDirection: ($scope.sortOptions.directions ? $scope.sortOptions.directions : []),
+            filter: $scope.filter
         };
         $http({
-            method: 'GET',
-            params: httpParameters,
+            method: 'POST',
+            data: httpParameters,
             url: '../readout_table'
         }).
                 success(

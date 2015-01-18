@@ -7,6 +7,9 @@ exports.validatonController = function(dataDao, connection) {
 			return "'" + stringToBeTicked + "'";
 		},
 		readOutValidations: function(tableName, successHandlerReadout, errorHandlerReadout) {
+			if(typeof tableName =='undefined') {
+				console.log();
+			}
 			var constraints = dataDao.readOutTable({
 				tableName: 'check_constraints',
 				successHandler: successHandlerReadout,
@@ -16,8 +19,7 @@ exports.validatonController = function(dataDao, connection) {
 			});
 		},
 		createCheckSQL: function(rawCheckConditions, valuesP) {
-                        console.log('values are');
-                        console.log(valuesP);
+                    
 			var values = [];
                         var checkConditionsIndexed = {};
                         
@@ -83,9 +85,7 @@ exports.validatonController = function(dataDao, connection) {
 			var values = dataToBeValidated.values;
 			var tableName = dataToBeValidated.tableName;
 			privateMethods.readOutValidations(tableName, function(response) {
-				console.log(response);
 				var sql = privateMethods.createCheckSQL(response.data, values)();
-				console.log(sql);
 				// fire sql
 				var result = [];
 				var resultOfValidation = connection.query(sql, function(resultRow) {

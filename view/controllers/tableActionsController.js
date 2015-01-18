@@ -51,7 +51,7 @@ app.controller('tableActionsController', function($scope, $http, $routeParams, $
                 success(function(data, status, headers, config) {
             alert('deleted ' + selectedItemIds.length + ' records');
             $scope.$parent.getPagedDataAsync();
-            $scope.$parent.gridOptions.selectedItems.clear();
+            $scope.$parent.gridOptions.selectedItems.clearSelection();
         }).
                 error(function(data, status, headers, config) {
             $scope.errors.errorList = data.errors;

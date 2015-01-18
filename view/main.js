@@ -1,31 +1,13 @@
 var menuName = 'view_menu';
 
-var app = angular.module('generica', ['hljs','ui.grid', 'ui.grid.paging', 'ui.grid.autoResize', 'ui.grid.moveColumns', 'ui.grid.selection', 'ui.grid.pinning', 'ui.grid.resizeColumns', 'ngGrid', 'ngRoute', 'ngResource', 'mgcrea.ngStrap', 'treeControl', 'angularFileUpload']);
+var app = angular.module('generica', ['angular-loading-bar','hljs','ui.grid', 'ngSanitize','ui.select','ui.grid.paging', 'ui.grid.autoResize', 'ui.grid.moveColumns', 'ui.grid.selection', 'ui.grid.pinning', 'ui.grid.resizeColumns', 'ngGrid', 'ngRoute', 'ngResource', 'mgcrea.ngStrap', 'treeControl', 'angularFileUpload']);
 
 
 
 app.factory('authHttpInterceptor', function ($q, $location) {
-    var loadingDiv = $('#loadingDiv');
     
-    if (loadingDiv == null) {
-        loadingDiv = {};
-        loadingDiv.show = function () {
-        };
-        loadingDiv.hide = function () {
-        };
-    }
-    
-    loadingDiv.hide();
     
     return {
-        'request': function (config) {
-            loadingDiv.show();
-            return config;
-        },
-        'response': function (response) {
-            loadingDiv.hide();
-            return response || $q.when(response);
-        },
         'responseError': function (rejection) {
             loadingDiv.hide();
             // prevent redirect loop

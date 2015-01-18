@@ -1,4 +1,35 @@
-app.controller('autoFormController', function($scope, $http, $routeParams, returnPageService,gridOptionsService) {
+app.filter('propsFilter', function() {
+  return function(items, props) {
+    var out = [];
+
+    if (angular.isArray(items)) {
+      items.forEach(function(item) {
+        var itemMatches = false;
+
+        var keys = Object.keys(props);
+        for (var i = 0; i < keys.length; i++) {
+          var prop = keys[i];
+          var text = props[prop].toLowerCase();
+          if (item[prop].toString().toLowerCase().indexOf(text) !== -1) {
+            itemMatches = true;
+            break;
+          }
+        }
+
+        if (itemMatches) {
+          out.push(item);
+        }
+      });
+    } else {
+      // Let the output be the input untouched
+      out = items;
+    }
+
+    return out;
+  }
+});
+
+app.controller('autoFormController', function($scope, $http, $routeParams, returnPageService, gridOptionsService) {
     var viewName = $routeParams.viewName;
 
     $scope.init = function(id) {
@@ -30,6 +61,12 @@ app.controller('autoFormController', function($scope, $http, $routeParams, retur
                             $scope.model[propertyName] = value;
                         }
                     }
+                    $scope.comboboxes = {};
+                    angular.forEach($scope.dataSchema, function(schemaObject, key) {
+                        if(schemaObject.data_type=='combobox') {
+                            $scope.comboboxes[schemaObject.field] = schemaObject.selectionElements;
+                        }
+                    });
                 }).
                 error(function(data, status, headers, config) {
             $scope.errors.errorList = [];
@@ -88,19 +125,26 @@ app.directive('autoform', function($compile) {
         var displayName = scope.content.displayName;
         var data_type = scope.content.data_type;
         var textLength = scope.content.textlength;
-        retStr += '<label class="control-label " for="' + field + '">' + displayName + '</label>\n\
-        ';
+        retStr += '<label class="control-label " for="' + field + '">' + displayName + '</label>';
         if (field == 'id') {
             data_type = 'id';
         }
         switch (data_type) {
             case 'combobox':
+                retStr +=
+                        '<ui-select ng-model="model.' + field + '" theme="bootstrap" ng-disabled="disabled">' +
+                        '<ui-select-match placeholder="Type or select">{{$select.selected.label}}</ui-select-match>' +
+                        '<ui-select-choices repeat="item.value as item in comboboxes.' + field + '| filter: $select.search">' +
+                        '<span ng-bind-html="item.value">item.label</span>' +
+                        '</ui-select-choices>' +
+                        '</ui-select>';
+//                retStr += '<ul><li ng-repeat="item in comboboxes.' + field + '">{{item.label}}</li></ul>';
                 var selectionElements = scope.content.selectionElements;
-                retStr += '<select style="width: 100%" ng-model="model.' + field + '" id="' + field + '">';
-                angular.forEach(selectionElements, function(value, key) {
-                    retStr += '<option value="' + value.value + '">' + value.label + '</option>';
-                });
-                retStr += '</select>';
+//                retStr += '<select style="width: 100%" ng-model="model.' + field + '" id="' + field + '">';
+//                angular.forEach(selectionElements, function(value, key) {
+//                    retStr += '<option value="' + value.value + '">' + value.label + '</option>';
+//                });
+//                retStr += '</select>';
                 break;
             case 'character varying':
                 if (textLength < 65) {
@@ -114,6 +158,9 @@ app.directive('autoform', function($compile) {
                 retStr += '<input class="form-control" type="file" ng-file-select="onXmlFileSelect($files,\'' + field + '\')">';
                 break;
             case 'date':
+                retStr +=
+                        ' <input class="form-control" type="text" ng-model="model.' + field + '"  bs-datepicker data-date-type="iso">';
+                break;
             case 'timestamp with time zone':
             case 'timestamp without time zone':
                 retStr +=
@@ -151,7 +198,7 @@ app.directive('autoform', function($compile) {
                 scope.model[modelName] = 'ab';
                 scope.model[modelName] = readText;
                 $('#' + modelName).val(readText);
-                scope.$emit('fireTriggers', "model."  + modelName);
+                scope.$emit('fireTriggers', "model." + modelName);
             };
             reader.readAsText($files[0]);
         };
@@ -167,7 +214,8 @@ app.directive('autoform', function($compile) {
             content: '=',
             model: '=model',
             formDisabled: '=disabledvar',
-            editForm: '=formname'
+            editForm: '=formname',
+            comboboxes: '=comboboxes'
         }
     };
 });

@@ -133,7 +133,6 @@
   -ms-user-select: none;
   user-select: none;
   width: 0;
-  height: 30px;
 }
 .ui-grid-header-cell .sortable {
   cursor: pointer;

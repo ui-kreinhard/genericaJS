@@ -49,9 +49,9 @@ app.service('menuElementService', function($http) {
     };
     this.reloadMenu = function(menuName) {
         $http({
-            method: 'GET',
+            method: 'POST',
             url: '../readout_table',
-            params: {
+            data: {
                 pageSize: '1000',
                 page: 1,
                 tableName: menuName

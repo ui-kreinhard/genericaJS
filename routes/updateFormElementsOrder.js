@@ -2,10 +2,7 @@ exports.formElementsOrder = function(app) {
     app.post('/update_formelements_order', function(req, res) {
         var errorHandler = require('../modules/errorHandler.js').errorHandler;
         var isNotDefined = require('../modules/utils.js').utils.isNotDefined;
-        var url = require('url');
-
-        var url_parts = url.parse(req.url, true);
-        var query = url_parts.query;
+   
         var dataDao = req.dataDao;
 
         var table_name = req.body.table_name;

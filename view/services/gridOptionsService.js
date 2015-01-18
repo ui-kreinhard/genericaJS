@@ -2,7 +2,7 @@ app.service('gridOptionsService', function() {
     var savedGridOptions = {};
     this.getGridOptions = function(viewName) {
         var defaultPagingOptions = {
-            pageSizes: [ 20, 50, 100,200,500,1000,5000],
+            pageSizes: [20, 50, 100, 200, 500, 1000, 5000],
             pageSize: 100,
             currentPage: 1
         };
@@ -23,14 +23,14 @@ app.service('gridOptionsService', function() {
                 enableGridMenu: true,
                 gridMenuCustomItems: [],
                 enableSelectAll: true,
-                selectionRowHeaderWidth: '30',
                 keepLastSelected: false,
                 pagingPageSizes: defaultPagingOptions.pageSizes,
                 pagingPageSize: defaultPagingOptions.pageSize,
                 useExternalPaging: true,
                 useExternalSorting: true,
                 pagingOptions: defaultPagingOptions,
-                showFilter: true,
+                enableFiltering: true,
+                 useExternalFiltering: true,
                 sortInfo: defaultSortOptions,
                 showColumnMenu: true,
                 selectionChangedListeners: [],
