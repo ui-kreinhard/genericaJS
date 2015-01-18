@@ -7,6 +7,7 @@ var console = process.console;
 var dataDaoHandler = require('./dataDaoHandler.js').dataDaoHandler();
 require('./sessionTimeoutHandler.js').sessionTimeoutHandler(dataDaoHandler, config.session.sessionTimeOut);
 
+var compress = require('compression')
 var express = require('express');
 var url = require('url');
 var app = express();
@@ -14,6 +15,7 @@ var router = express.Router();
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var generateSessionCrypto = require('./modules/utils.js').utils.generateSessionCrypto;
+app.use(compress());  
 app.use(cookieParser());
 app.use(session({
     secret: generateSessionCrypto(),
