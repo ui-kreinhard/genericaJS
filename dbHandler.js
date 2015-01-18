@@ -1,3 +1,13 @@
+var scribe = process.scribe;
+
+var logger = scribe.console({
+    console: {
+        colors: 'white'
+    },
+    logWriter: {
+        rootPath: 'sql_logs'
+    }
+});
 
 
 exports.dbHandler = function(username, password, errorHandler, successHandler) {
@@ -5,22 +15,15 @@ exports.dbHandler = function(username, password, errorHandler, successHandler) {
     var Stopwatch = require('timer-stopwatch');
     var pg = require('pg');
 
-
-    var scribe = process.scribe;
-
-    var logger = scribe.console({
-        console: {
-            colors: 'white'
-        },
-        logWriter: {
-            rootPath: 'sql_logs'
-        }
-    });
-
-
-    var connectionString = "postgres://" + username + ":" + password + "@" + config.db.hostname + ":" + config.db.port + "/" + config.db.dbName;
-
-    var client = new pg.Client(connectionString);
+    // remap config in own object, avoids problems with the url fuck up
+    var configPg = {
+        user: username,
+        database: config.db.dbName,
+        port: config.db.port,
+        host: config.db.hostname,
+        password: password
+    };
+    var client = new pg.Client(configPg);
     client.connect(function(err, client, done) {
         if (err) {
             logger.error(err);
