@@ -1,15 +1,33 @@
 
 exports.dataDao = function(connection) {
+    var setSessionCommands = function() {
+        connection.query("SET datestyle = 'MDY'", function(result) {
+           console.log(result);
 
-    var validatonController = require('./validationController.js').validatonController(this, connection);
-
-
+        },
+              function() {},
+                function() {});
+    };
+    setSessionCommands();
+    
     var getFilter = function(params) {
         var filter = ' WHERE 1=1 ';
         if (params.filter) {
             for (var property in params.filter) {
-                var value = params.filter[property];
-                filter += ' AND ' + property + '=' + "'" + value + "'";
+                var filterObject = params.filter[property];
+                var term = filterObject.term;                
+                switch(filterObject.operator) {
+                    case 'LIKE':
+                        filter += ' AND ' + property + '::varchar LIKE ' + "'" + term + "%'";
+                    break;
+                    case '=':
+                    default:
+                        filter += ' AND ' + property + '=' + "'" + term + "'";    
+                    break;
+                }
+                
+                
+                
             }
         }
         return filter;
@@ -20,7 +38,7 @@ exports.dataDao = function(connection) {
         if (params.orderBy) {
             if (typeof params.orderBy == 'string') {
                 orderByString = ' ORDER BY ' + params.orderBy + ' ' + params.orderByDirection;
-            } else {
+            } else if(params.orderBy.length > 0){
                 var newOrderByArray = [];
                 for (var i = 0; i < params.orderBy.length; i++) {
                     newOrderByArray.push(params.orderBy[i] + ' ' + params.orderByDirection[i]);
