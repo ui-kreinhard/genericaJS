@@ -20,7 +20,7 @@ exports.formData = function(app, dataDaoHandler) {
             query.id = -1;
         }
         query.filter = {
-            id: query.id
+            id: { term: query.id }
         };
         dataDao.readOutTable(query);
     });
