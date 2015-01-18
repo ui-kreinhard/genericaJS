@@ -4,10 +4,10 @@ exports.readOutTableData = function(app, dataDaoHandler) {
     var errorHandler = require('../modules/errorHandler.js').errorHandler;
     var isNotDefined = require('../modules/utils.js').utils.isNotDefined;
     
-    app.get('/readout_table', function(req, res) {
+    app.post('/readout_table', function(req, res) {
         var dataDao = req.dataDao;
         var url_parts = url.parse(req.url, true);
-        var query = url_parts.query;
+        var query = req.body;
 
         query.errorHandler = function(err) {
             res.statusCode = 500;
