@@ -92,7 +92,7 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
                 $scope.gridOptions.savedSortColumns = sortColumns;
                 $scope.getPagedDataAsync();
             });
-            gridApi.paging.on.pagingChanged($scope, function(newPage, pageSize) {
+            gridApi.pagination.on.paginationChanged($scope, function(newPage, pageSize) {
                 $scope.pagingOptions.currentPage = newPage;
                 $scope.pagingOptions.pageSize = pageSize;
                 $scope.getPagedDataAsync();
