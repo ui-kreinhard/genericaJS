@@ -152,6 +152,7 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
                     columns = data.schema;
 
                     $scope.gridOptions.totalItems = data.dataCount;
+                    
 
                     $scope.rights.canDelete = data.rights.canDelete;
                     $scope.rights.canInsert = data.rights.canInsert;

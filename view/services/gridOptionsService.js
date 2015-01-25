@@ -16,7 +16,7 @@ app.service('gridOptionsService', function() {
             var that = savedGridOptions[viewName] = {
                 that: null,
                 data: 'rowData',
-                totalServerItems: 'totalServerItems',
+                
                 columnDefs: [],
                 enableRowSelection: true,
                 savedSortColumns: {},
@@ -26,11 +26,11 @@ app.service('gridOptionsService', function() {
                 keepLastSelected: false,
                 paginationPageSizes: defaultPagingOptions.pageSizes,
                 paginationPageSize: defaultPagingOptions.pageSize,
-                useExternalPaging: true,
+                useExternalPagination: true,
                 useExternalSorting: true,
                 pagingOptions: defaultPagingOptions,
                 enableFiltering: true,
-                 useExternalFiltering: true,
+                useExternalFiltering: true,
                 sortInfo: defaultSortOptions,
                 showColumnMenu: true,
                 selectionChangedListeners: [],
@@ -65,6 +65,8 @@ app.service('gridOptionsService', function() {
             };
             savedGridOptions[viewName].that = savedGridOptions[viewName];
         }
+        // hack - lets see if this fixes the fuckup
+        
         return savedGridOptions[viewName];
     };
 });
