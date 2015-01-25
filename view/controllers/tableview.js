@@ -192,7 +192,7 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
                                 valueInner.sort = {
                                     direction: $scope.gridOptions.sortInfo.directions[i],
                                     priority: i
-                                }
+                                };
                                 i++;
                             } else {
                                 valueInner.sort = null;

@@ -135,7 +135,7 @@ app.directive('autoform', function($compile) {
                         '<ui-select ng-model="model.' + field + '" theme="bootstrap" ng-disabled="disabled">' +
                         '<ui-select-match placeholder="Type or select">{{$select.selected.label}}</ui-select-match>' +
                         '<ui-select-choices repeat="item.value as item in comboboxes.' + field + '| filter: $select.search">' +
-                        '<span ng-bind-html="item.value">item.label</span>' +
+                        '<span ng-bind-html="item.label">item.label</span>' +
                         '</ui-select-choices>' +
                         '</ui-select>';
 //                retStr += '<ul><li ng-repeat="item in comboboxes.' + field + '">{{item.label}}</li></ul>';
