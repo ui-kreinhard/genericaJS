@@ -1,4 +1,4 @@
-/*! ui-grid - v3.0.0-RC.18-16dbfe2 - 2015-01-21
+/*! ui-grid - v3.0.0-RC.18-a54e9a9 - 2015-01-25
 * Copyright (c) 2015 ; License: MIT */
 (function () {
   'use strict';
@@ -174,7 +174,7 @@ angular.module('ui.grid').directive('uiGridCell', ['$compile', '$parse', 'gridUt
           }
           
           // Register a data change watch that would get triggered whenever someone edits a cell or modifies column defs
-          var watchUid = $scope.grid.registerDataChangeCallback( updateClass, [uiGridConstants.dataChange.COLUMN, uiGridConstants.dataChange.EDIT]);
+          var dataChangeDereg = $scope.grid.registerDataChangeCallback( updateClass, [uiGridConstants.dataChange.COLUMN, uiGridConstants.dataChange.EDIT]);
           
           // watch the col and row to see if they change - which would indicate that we've scrolled or sorted or otherwise
           // changed the row/col that this cell relates to, and we need to re-evaluate cell classes and maybe other things
@@ -192,7 +192,7 @@ angular.module('ui.grid').directive('uiGridCell', ['$compile', '$parse', 'gridUt
           
           
           var deregisterFunction = function() {
-            $scope.grid.deregisterDataChangeCallback( watchUid );
+            dataChangeDereg();
             colWatchDereg();
             rowWatchDereg(); 
           };
@@ -656,6 +656,7 @@ function ($timeout, gridUtil, uiGridConstants, uiGridColumnMenuService) {
 
         $scope.grid.refresh();
         $scope.hideMenu();
+        $scope.grid.api.core.notifyDataChange( uiGridConstants.dataChange.COLUMN );
       };
     },
     
@@ -724,11 +725,9 @@ function ($timeout, gridUtil, uiGridConstants, uiGridColumnMenuService) {
             }
 
             // Register a data change watch that would get triggered whenever someone edits a cell or modifies column defs
-            var watchUid = $scope.grid.registerDataChangeCallback( updateClass, [uiGridConstants.dataChange.COLUMN]);
+            var dataChangeDereg = $scope.grid.registerDataChangeCallback( updateClass, [uiGridConstants.dataChange.COLUMN]);
 
-            $scope.$on( '$destroy', function() {
-              $scope.grid.deregisterDataChangeCallback( watchUid ); 
-            });
+            $scope.$on( '$destroy', dataChangeDereg );
           }
         };
       }
@@ -941,20 +940,17 @@ function ($timeout, gridUtil, uiGridConstants, uiGridColumnMenuService) {
                 classAdded = $scope.col.headerCellClass;
               }
               contents.addClass(classAdded);
+              
+              var rightMostContainer = $scope.grid.renderContainers['right'] ? $scope.grid.renderContainers['right'] : $scope.grid.renderContainers['body'];
+              $scope.isLastCol = ( $scope.col === rightMostContainer.visibleColumnCache[ rightMostContainer.visibleColumnCache.length - 1 ] );
             };
   
-            if ($scope.col.headerCellClass) {
-              updateClass();
-            }
+            updateClass();
             
             // Register a data change watch that would get triggered whenever someone edits a cell or modifies column defs
-            var watchUid = $scope.grid.registerDataChangeCallback( updateClass, [uiGridConstants.dataChange.COLUMN]);
+            var dataChangeDereg = $scope.grid.registerDataChangeCallback( updateClass, [uiGridConstants.dataChange.COLUMN]);
 
-            var deregisterFunction = function() {
-              $scope.grid.deregisterDataChangeCallback( watchUid ); 
-            };
-
-            $scope.$on( '$destroy', deregisterFunction );            
+            $scope.$on( '$destroy', dataChangeDereg );            
 
 
             // Figure out whether this column is sortable or not
@@ -1353,7 +1349,7 @@ function ($timeout, gridUtil, uiGridConstants, uiGridColumnMenuService) {
 (function(){
 
 angular.module('ui.grid')
-.service('uiGridGridMenuService', [ 'gridUtil', 'i18nService', function( gridUtil, i18nService ) {
+.service('uiGridGridMenuService', [ 'gridUtil', 'i18nService', 'uiGridConstants', function( gridUtil, i18nService, uiGridConstants ) {
   /**
    *  @ngdoc service
    *  @name ui.grid.gridMenuService
@@ -1675,6 +1671,7 @@ angular.module('ui.grid')
       gridCol.colDef.visible = !( gridCol.colDef.visible === true || gridCol.colDef.visible === undefined ); 
       
       gridCol.grid.refresh();
+      gridCol.grid.api.core.notifyDataChange( uiGridConstants.dataChange.COLUMN );
     }
   };
   
@@ -3538,7 +3535,6 @@ angular.module('ui.grid')
      * might be particularly relevant where you've changed values within the data
      * and you'd like cell classes to be re-evaluated, or changed config within 
      * the columnDef and you'd like headerCellClasses to be re-evaluated.
-     * @param {Grid} grid the grid
      * @param {string} type one of the 
      * uiGridConstants.dataChange values (ALL, ROW, EDIT, COLUMN), which tells
      * us which refreshes to fire.
@@ -3654,7 +3650,7 @@ angular.module('ui.grid')
    * @param {array} types the types of data change you want to be informed of.  Values from 
    * the uiGridConstants.dataChange values ( ALL, EDIT, ROW, COLUMN, OPTIONS ).  Optional and defaults to
    * ALL 
-   * @returns {string} uid of the callback, can be used to deregister it again
+   * @returns {function} deregister function - a function that can be called to deregister this callback
    */
   Grid.prototype.registerDataChangeCallback = function registerDataChangeCallback(callback, types, _this) {
     var uid = gridUtil.nextUid();
@@ -3665,18 +3661,12 @@ angular.module('ui.grid')
       gridUtil.logError("Expected types to be an array or null in registerDataChangeCallback, value passed was: " + types );
     }
     this.dataChangeCallbacks[uid] = { callback: callback, types: types, _this:_this };
-    return uid;
-  };
-
-  /**
-   * @ngdoc function
-   * @name deregisterDataChangeCallback
-   * @methodOf ui.grid.class:Grid
-   * @description Delete the callback identified by the id.
-   * @param {string} uid the uid of the function that is to be deregistered
-   */
-  Grid.prototype.deregisterDataChangeCallback = function deregisterDataChangeCallback(uid) {
-    delete this.dataChangeCallbacks[uid];
+    
+    var self = this;
+    var deregisterFunction = function() {
+      delete self.dataChangeCallbacks[uid];
+    };
+    return deregisterFunction;
   };
 
   /**
@@ -3711,18 +3701,17 @@ angular.module('ui.grid')
    * @description Notifies us that a data change has occurred, used in the public
    * api for users to tell us when they've changed data or some other event that 
    * our watches cannot pick up
-   * @param {Grid} grid the grid
    * @param {string} type the type of event that occurred - one of the 
    * uiGridConstants.dataChange values (ALL, ROW, EDIT, COLUMN)
    */
-  Grid.prototype.notifyDataChange = function notifyDataChange(grid, type) {
+  Grid.prototype.notifyDataChange = function notifyDataChange(type) {
     var constants = uiGridConstants.dataChange;
     if ( type === constants.ALL || 
          type === constants.COLUMN ||
          type === constants.EDIT ||
          type === constants.ROW ||
          type === constants.OPTIONS ){
-      grid.callDataChangeCallbacks( type );
+      this.callDataChangeCallbacks( type );
     } else {
       gridUtil.logError("Notified of a data change, but the type was not recognised, so no action taken, type was: " + type);
     }
@@ -8226,7 +8215,7 @@ module.service('rowSearcher', ['gridUtil', 'uiGridConstants', function (gridUtil
 
     // Get the column value for this row
     var value = grid.getCellValue(row, column);
-
+    
     // If the filter's condition is a RegExp, then use it
     if (filter.condition instanceof RegExp) {
       return filter.condition.test(value);
@@ -8253,6 +8242,17 @@ module.service('rowSearcher', ['gridUtil', 'uiGridConstants', function (gridUtil
       return filter.exactRE.test(value);
     }
     
+    if (filter.condition === uiGridConstants.filter.NOT_EQUAL) {
+      return angular.equals(value, term);
+    }
+
+    if (typeof(value) === 'number'){
+      var tempFloat = parseFloat(term);
+      if (!isNaN(tempFloat)) {
+        term = tempFloat;
+      }
+    }
+
     if (filter.condition === uiGridConstants.filter.GREATER_THAN) {
       return (value > term);
     }
@@ -8269,10 +8269,6 @@ module.service('rowSearcher', ['gridUtil', 'uiGridConstants', function (gridUtil
       return (value <= term);
     }
     
-    if (filter.condition === uiGridConstants.filter.NOT_EQUAL) {
-      return angular.equals(value, term);
-    }
-
     return true;
   };
 
@@ -8591,8 +8587,8 @@ module.service('rowSorter', ['$parse', 'uiGridConstants', function ($parse, uiGr
     if ( nulls !== null ){
       return nulls;
     } else {
-      var strA = a.toLowerCase(),
-          strB = b.toLowerCase();
+      var strA = a.toString().toLowerCase(),
+          strB = b.toString().toLowerCase();
   
       return strA === strB ? 0 : (strA < strB ? -1 : 1);
     }
@@ -11661,6 +11657,19 @@ module.filter('px', function() {
 
                 /**
                  * @ngdoc function
+                 * @name scrollToFocus
+                 * @methodOf  ui.grid.cellNav.api:PublicApi
+                 * @description brings the specified row and column fully into view if it isn't already
+                 * @param {object} $scope a scope we can broadcast events from
+                 * @param {GridRow} row grid row that we should make fully visible
+                 * @param {GridCol} col grid col to make fully visible
+                 */
+                scrollToIfNecessary: function ($scope, row, col) {
+                  service.scrollToIfNecessary(grid, $scope, row, col);
+                },
+
+                /**
+                 * @ngdoc function
                  * @name getFocusedCell
                  * @methodOf  ui.grid.cellNav.api:PublicApi
                  * @description returns the current (or last if Grid does not have focus) focused row and column
@@ -12284,10 +12293,12 @@ module.filter('px', function() {
                 if (uiGridCtrl.grid.api.cellNav.getFocusedCell() == null) {
                   return;
                 }
-
+                
                 // We have to wrap in TWO timeouts so that we run AFTER the scroll event is resolved.
                 $timeout(function () {
                   $timeout(function () {
+
+/* No longer trying to retain focus when scroll - too many side effects, particularly with editOnFocus
                     // Get the last row+col combo
                     var lastRowCol = uiGridCtrl.grid.api.cellNav.getFocusedCell();
 
@@ -12297,12 +12308,16 @@ module.filter('px', function() {
                     if ($document.activeElement === $document.body) {
                       $elm[0].focus();
                     }
+*/
+                    // make a dummy roCol
+                    var rowCol = { col: { uid: null }, row: { uid: null } };
 
-                    // Re-broadcast a cellNav event so we re-focus the right cell
-                    uiGridCtrl.cellNav.broadcastCellNav(lastRowCol);
+                    // broadcast a cellNav event so we clear the focus on all cells
+                    uiGridCtrl.cellNav.broadcastCellNav(rowCol);
                   });
                 });
-              });
+              });  
+             
             }
           };
         }
@@ -12795,6 +12810,8 @@ module.filter('px', function() {
             var cellModel;
             var cancelTouchstartTimeout;
 
+            var editCellScope;
+
             registerBeginEditEvents();
 
             function registerBeginEditEvents() {
@@ -12983,6 +13000,11 @@ module.filter('px', function() {
                 return;
               }
 
+              // if the cell isn't fully visible, and cellNav is present, scroll it to be fully visible before we start
+              if ( $scope.grid.api.cellNav ){
+                $scope.grid.api.cellNav.scrollToIfNecessary( $scope, $scope.row, $scope.col );
+              }
+              
               cellModel = $parse($scope.row.getQualifiedColField($scope.col));
               //get original value from the cell
               origCellValue = cellModel($scope);
@@ -13023,7 +13045,8 @@ module.filter('px', function() {
                 cancelBeginEditEvents();
                 var cellElement = angular.element(html);
                 $elm.append(cellElement);
-                $compile(cellElement)($scope.$new());
+                editCellScope = $scope.$new();
+                $compile(cellElement)(editCellScope);
                 var gridCellContentsEl = angular.element($elm.children()[0]);
                 isFocusedBeforeEdit = gridCellContentsEl.hasClass('ui-grid-cell-focus');
                 gridCellContentsEl.addClass('ui-grid-cell-contents-hidden');
@@ -13065,6 +13088,7 @@ module.filter('px', function() {
               }
               var gridCellContentsEl = angular.element($elm.children()[0]);
               //remove edit element
+              editCellScope.$destroy();
               angular.element($elm.children()[1]).remove();
               gridCellContentsEl.removeClass('ui-grid-cell-contents-hidden');
               if (retainFocus && isFocusedBeforeEdit) {
@@ -13073,7 +13097,7 @@ module.filter('px', function() {
               isFocusedBeforeEdit = false;
               inEdit = false;
               registerBeginEditEvents();
-              $scope.grid.api.core.notifyDataChange( $scope.grid, uiGridConstants.dataChange.EDIT );
+              $scope.grid.api.core.notifyDataChange( uiGridConstants.dataChange.EDIT );
             }
 
             function cancelEdit() {
@@ -14925,11 +14949,10 @@ module.filter('px', function() {
                  * @methodOf  ui.grid.importer.api:PublicApi
                  * @description Imports a file into the grid using the file object 
                  * provided.  Bypasses the grid menu
-                 * @param {Grid} grid the grid we're importing into
                  * @param {File} fileObject the file we want to import, as a javascript
                  * File object
                  */
-                importFile: function ( grid, fileObject ) {
+                importFile: function ( fileObject ) {
                   service.importThisFile( grid, fileObject );
                 }
               }
@@ -15213,7 +15236,7 @@ module.filter('px', function() {
          * @methodOf ui.grid.importer.service:uiGridImporterService
          * @description Creates a function that imports a json file into the grid.
          * The json data is imported into new objects of type `gridOptions.importerNewObject`,
-         * and ift he rowEdit feature is enabled the rows are marked as dirty
+         * and if the rowEdit feature is enabled the rows are marked as dirty
          * @param {Grid} grid the grid we want to import into
          * @param {FileObject} importFile the file that we want to import, as 
          * a FileObject
@@ -15455,16 +15478,12 @@ module.filter('px', function() {
          */
         addObjects: function( grid, newObjects, $scope ){
           if ( grid.api.rowEdit ){
-            var callbackId = grid.registerDataChangeCallback( function() {
-              grid.api.rowEdit.setRowsDirty( grid, newObjects );
-              grid.deregisterDataChangeCallback( callbackId );
+            var dataChangeDereg = grid.registerDataChangeCallback( function() {
+              grid.api.rowEdit.setRowsDirty( newObjects );
+              dataChangeDereg();
             }, [uiGridConstants.dataChange.ROW] );
             
-            var deregisterClosure = function() {
-              grid.deregisterDataChangeCallback( callbackId );
-            };
-  
-            grid.importer.$scope.$on( '$destroy', deregisterClosure );
+            grid.importer.$scope.$on( '$destroy', dataChangeDereg );
           }
 
           grid.importer.$scope.$apply( grid.options.importerDataAddCallback( grid, newObjects ) );
@@ -15808,7 +15827,7 @@ module.filter('px', function() {
    *  @name ui.grid.moveColumns.service:uiGridMoveColumnService
    *  @description Service for column moving feature.
    */
-  module.service('uiGridMoveColumnService', ['$q', '$timeout', '$log', 'ScrollEvent', function ($q, $timeout, $log, ScrollEvent) {
+  module.service('uiGridMoveColumnService', ['$q', '$timeout', '$log', 'ScrollEvent', 'uiGridConstants', function ($q, $timeout, $log, ScrollEvent, uiGridConstants) {
 
     var service = {
       initializeGrid: function (grid) {
@@ -15931,6 +15950,7 @@ module.filter('px', function() {
           $timeout(function () {
             grid.refresh();
             grid.api.colMovable.raise.columnPositionChanged(originalColumn.colDef, originalPosition, newPosition);
+            grid.api.core.notifyDataChange( uiGridConstants.dataChange.COLUMN );
           });
         }
       }
@@ -16565,11 +16585,13 @@ module.filter('px', function() {
             return adjustment;
           });
           
-          uiGridCtrl.grid.registerDataChangeCallback(function (grid) {
+          var dataChangeDereg = uiGridCtrl.grid.registerDataChangeCallback(function (grid) {
             if (!grid.options.useExternalPagination) {
               grid.options.totalItems = grid.rows.length;
             }
           }, [uiGridConstants.dataChange.ROW]);
+          
+          $scope.$on('$destroy', dataChangeDereg);
 
           var setShowing = function () {
             $scope.showingLow = ((options.paginationCurrentPage - 1) * options.paginationPageSize) + 1;
@@ -16854,11 +16876,6 @@ module.filter('px', function() {
 
   var module = angular.module('ui.grid.resizeColumns', ['ui.grid']);
 
-  module.constant('columnBounds', {
-    minWidth: 35
-  });
-
-
   module.service('uiGridResizeColumnsService', ['gridUtil', '$q', '$timeout',
     function (gridUtil, $q, $timeout) {
 
@@ -16951,7 +16968,22 @@ module.filter('px', function() {
           $timeout(function () {
             grid.api.colResizable.raise.columnSizeChanged(colDef, deltaChange);
           });
+        },
+        
+        // get either this column, or the column next to this column, to resize,
+        // returns the column we're going to resize
+        findTargetCol: function(col, position, rtlMultiplier){
+          var renderContainer = col.getRenderContainer();
+
+          if (position === 'left') {
+            // Get the column to the left of this one
+            var colIndex = renderContainer.visibleColumnCache.indexOf(col);          
+            return renderContainer.visibleColumnCache[colIndex - 1 * rtlMultiplier];
+          } else {
+            return col;
+          }
         }
+        
       };
 
       return service;
@@ -17016,7 +17048,7 @@ module.filter('px', function() {
   }]);
 
   // Extend the uiGridHeaderCell directive
-  module.directive('uiGridHeaderCell', ['gridUtil', '$templateCache', '$compile', '$q', function (gridUtil, $templateCache, $compile, $q) {
+  module.directive('uiGridHeaderCell', ['gridUtil', '$templateCache', '$compile', '$q', 'uiGridResizeColumnsService', 'uiGridConstants', '$timeout', function (gridUtil, $templateCache, $compile, $q, uiGridResizeColumnsService, uiGridConstants, $timeout) {
     return {
       // Run after the original uiGridHeaderCell
       priority: -10,
@@ -17025,43 +17057,58 @@ module.filter('px', function() {
       compile: function() {
         return {
           post: function ($scope, $elm, $attrs, uiGridCtrl) {
-           if (uiGridCtrl.grid.options.enableColumnResizing) {
-              var renderIndexDefer = $q.defer();
+            var grid = uiGridCtrl.grid;
 
-              $attrs.$observe('renderIndex', function (n, o) {
-                $scope.renderIndex = $scope.$eval(n);
+            if (grid.options.enableColumnResizing) {
+              var columnResizerElm = $templateCache.get('ui-grid/columnResizer');
+    
+              var rtlMultiplier = 1;
+              //when in RTL mode reverse the direction using the rtlMultiplier and change the position to left
+              if (grid.isRTL()) {
+                $scope.position = 'left';
+                rtlMultiplier = -1;
+              }
 
-                renderIndexDefer.resolve();
-              });
-
-              renderIndexDefer.promise.then(function() {
-                var columnResizerElm = $templateCache.get('ui-grid/columnResizer');
-
-                var resizerLeft = angular.element(columnResizerElm).clone();
-                var resizerRight = angular.element(columnResizerElm).clone();
-
-                resizerLeft.attr('position', 'left');
-                resizerRight.attr('position', 'right');
-
-                var col = $scope.col;
-                var renderContainer = col.getRenderContainer();
-
-
-                // Get the column to the left of this one
-                var otherCol = renderContainer.renderedColumns[$scope.renderIndex - 1];
-
+              var displayResizers = function(){
+                
+                // remove any existing resizers.  
+                var resizers = $elm[0].getElementsByClassName('ui-grid-column-resizer');
+                for ( var i = 0; i < resizers.length; i++ ){
+                  angular.element(resizers[i]).remove();
+                } 
+                
+                // get the target column for the left resizer
+                var otherCol = uiGridResizeColumnsService.findTargetCol($scope.col, 'left', rtlMultiplier);
+                var renderContainer = $scope.col.getRenderContainer();
+              
                 // Don't append the left resizer if this is the first column or the column to the left of this one has resizing disabled
                 if (otherCol && renderContainer.visibleColumnCache.indexOf($scope.col) !== 0 && otherCol.colDef.enableColumnResizing !== false) {
+                  var resizerLeft = angular.element(columnResizerElm).clone();
+                  resizerLeft.attr('position', 'left');
+
                   $elm.prepend(resizerLeft);
                   $compile(resizerLeft)($scope);
                 }
                 
                 // Don't append the right resizer if this column has resizing disabled
                 if ($scope.col.colDef.enableColumnResizing !== false) {
+                  var resizerRight = angular.element(columnResizerElm).clone();
+                  resizerRight.attr('position', 'right');
+
                   $elm.append(resizerRight);
                   $compile(resizerRight)($scope);
                 }
-              });
+              };
+
+              displayResizers();
+              
+              var waitDisplay = function(){
+                $timeout(displayResizers);
+              };
+              
+              var dataChangeDereg = grid.registerDataChangeCallback( waitDisplay, [uiGridConstants.dataChange.COLUMN] );
+              
+              $scope.$on( '$destroy', dataChangeDereg );
             }
           }
         };
@@ -17111,7 +17158,7 @@ module.filter('px', function() {
      </doc:scenario>
    </doc:example>
    */  
-  module.directive('uiGridColumnResizer', ['$document', 'gridUtil', 'uiGridConstants', 'columnBounds', 'uiGridResizeColumnsService', function ($document, gridUtil, uiGridConstants, columnBounds, uiGridResizeColumnsService) {
+  module.directive('uiGridColumnResizer', ['$document', 'gridUtil', 'uiGridConstants', 'uiGridResizeColumnsService', function ($document, gridUtil, uiGridConstants, uiGridResizeColumnsService) {
     var resizeOverlay = angular.element('<div class="ui-grid-resize-overlay"></div>');
 
     var downEvent, upEvent, moveEvent;
@@ -17183,6 +17230,23 @@ module.filter('px', function() {
             });
         }
 
+        // Check that the requested width isn't wider than the maxWidth, or narrower than the minWidth
+        // Returns the new recommended with, after constraints applied
+        function constrainWidth(col, width){
+          var newWidth = width;
+
+          // If the new width would be less than the column's allowably minimum width, don't allow it
+          if (col.colDef.minWidth && newWidth < col.colDef.minWidth) {
+            newWidth = col.colDef.minWidth;
+          }
+          else if (col.colDef.maxWidth && newWidth > col.colDef.maxWidth) {
+            newWidth = col.colDef.maxWidth;
+          }
+          
+          return newWidth;
+        }
+        
+        
         function mousemove(event, args) {
           if (event.originalEvent) { event = event.originalEvent; }
           event.preventDefault();
@@ -17192,18 +17256,7 @@ module.filter('px', function() {
           if (x < 0) { x = 0; }
           else if (x > uiGridCtrl.grid.gridWidth) { x = uiGridCtrl.grid.gridWidth; }
 
-          // The other column to resize (the one next to this one)
-          var col = $scope.col;
-          var renderContainer = col.getRenderContainer();
-          var otherCol;
-          if ($scope.position === 'left') {
-            // Get the column to the left of this one
-            col = renderContainer.renderedColumns[$scope.renderIndex - 1];
-            otherCol = $scope.col;
-          }
-          else if ($scope.position === 'right') {
-            otherCol = renderContainer.renderedColumns[$scope.renderIndex + 1];
-          }
+          var col = uiGridResizeColumnsService.findTargetCol($scope.col, $scope.position, rtlMultiplier);
 
           // Don't resize if it's disabled on this column
           if (col.colDef.enableColumnResizing === false) {
@@ -17220,21 +17273,14 @@ module.filter('px', function() {
           // Get the width that this mouse would give the column
           var newWidth = parseInt(col.drawnWidth + xDiff * rtlMultiplier, 10);
 
-          // If the new width would be less than the column's allowably minimum width, don't allow it
-          if (col.colDef.minWidth && newWidth < col.colDef.minWidth) {
-            x = x + (col.colDef.minWidth - newWidth) * rtlMultiplier;
-          }
-          else if (!col.colDef.minWidth && columnBounds.minWidth && newWidth < columnBounds.minWidth) {
-            x = x + (col.colDef.minWidth - newWidth);
-          }
-          else if (col.colDef.maxWidth && newWidth > col.colDef.maxWidth) {
-            x = x + (col.colDef.maxWidth - newWidth) * rtlMultiplier;
-          }
+          // check we're not outside the allowable bounds for this column
+          x = x + ( constrainWidth(col, newWidth) - newWidth ) * rtlMultiplier;
           
           resizeOverlay.css({ left: x + 'px' });
 
           uiGridCtrl.fireEvent(uiGridConstants.events.ITEM_DRAGGING);
         }
+        
 
         function mouseup(event, args) {
           if (event.originalEvent) { event = event.originalEvent; }
@@ -17254,19 +17300,7 @@ module.filter('px', function() {
             return;
           }
 
-          // The other column to resize (the one next to this one)
-          var col = $scope.col;
-          var renderContainer = col.getRenderContainer();
-
-          var otherCol;
-          if ($scope.position === 'left') {
-            // Get the column to the left of this one
-            col = renderContainer.renderedColumns[$scope.renderIndex - 1];
-            otherCol = $scope.col;
-          }
-          else if ($scope.position === 'right') {
-            otherCol = renderContainer.renderedColumns[$scope.renderIndex + 1];
-          }
+          var col = uiGridResizeColumnsService.findTargetCol($scope.col, $scope.position, rtlMultiplier);
 
           // Don't resize if it's disabled on this column
           if (col.colDef.enableColumnResizing === false) {
@@ -17276,19 +17310,8 @@ module.filter('px', function() {
           // Get the new width
           var newWidth = parseInt(col.drawnWidth + xDiff * rtlMultiplier, 10);
 
-          // If the new width is less than the minimum width, make it the minimum width
-          if (col.colDef.minWidth && newWidth < col.colDef.minWidth) {
-            newWidth = col.colDef.minWidth;
-          }
-          else if (!col.colDef.minWidth && columnBounds.minWidth && newWidth < columnBounds.minWidth) {
-            newWidth = columnBounds.minWidth;
-          }
-          // 
-          if (col.colDef.maxWidth && newWidth > col.colDef.maxWidth) {
-            newWidth = col.colDef.maxWidth;
-          }
-          
-          col.width = newWidth;
+          // check we're not outside the allowable bounds for this column
+          col.width = constrainWidth(col, newWidth);
 
           // All other columns because fixed to their drawn width, if they aren't already
           resizeAroundColumn(col);
@@ -17300,6 +17323,7 @@ module.filter('px', function() {
           $document.off(upEvent, mouseup);
           $document.off(moveEvent, mousemove);
         }
+
 
         $elm.on(downEvent, function(event, args) {
           if (event.originalEvent) { event = event.originalEvent; }
@@ -17323,25 +17347,16 @@ module.filter('px', function() {
           $document.on(moveEvent, mousemove);
         });
 
+
         // On doubleclick, resize to fit all rendered cells
         $elm.on('dblclick', function(event, args) {
           event.stopPropagation();
 
-          var col = $scope.col;
-          var renderContainer = col.getRenderContainer();
+          var col = uiGridResizeColumnsService.findTargetCol($scope.col, $scope.position, rtlMultiplier);
 
-          var otherCol, multiplier;
-
-          // If we're the left-positioned resizer then we need to resize the column to the left of our column, and not our column itself
-          if ($scope.position === 'left') {
-            col = renderContainer.renderedColumns[$scope.renderIndex - 1];
-            otherCol = $scope.col;
-            multiplier = 1;
-          }
-          else if ($scope.position === 'right') {
-            otherCol = renderContainer.renderedColumns[$scope.renderIndex + 1];
-            otherCol = renderContainer.renderedColumns[$scope.renderIndex + 1];
-            multiplier = -1;
+          // Don't resize if it's disabled on this column
+          if (col.colDef.enableColumnResizing === false) {
+            return;
           }
 
           // Go through the rendered rows and find out the max size for the data in this column
@@ -17382,19 +17397,8 @@ module.filter('px', function() {
               });
             });
 
-          // If the new width is less than the minimum width, make it the minimum width
-          if (col.colDef.minWidth && maxWidth < col.colDef.minWidth) {
-            maxWidth = col.colDef.minWidth;
-          }
-          else if (!col.colDef.minWidth && columnBounds.minWidth && maxWidth < columnBounds.minWidth) {
-            maxWidth = columnBounds.minWidth;
-          }
-          // 
-          if (col.colDef.maxWidth && maxWidth > col.colDef.maxWidth) {
-            maxWidth = col.colDef.maxWidth;
-          }
-
-          col.width = parseInt(maxWidth, 10);
+          // check we're not outside the allowable bounds for this column
+          col.width = constrainWidth(col, maxWidth);
           
           // All other columns because fixed to their drawn width, if they aren't already
           resizeAroundColumn(col);
@@ -17512,14 +17516,13 @@ module.filter('px', function() {
                  * <pre>
                  *      gridApi.rowEdit.setSavePromise(grid, rowEntity)
                  * </pre>
-                 * @param {object} grid the grid for which dirty rows should be returned
                  * @param {object} rowEntity a data row from the grid for which a save has
                  * been initiated
                  * @param {promise} savePromise the promise that will be resolved when the
                  * save is successful, or rejected if the save fails
                  * 
                  */
-                setSavePromise: function (grid, rowEntity, savePromise) {
+                setSavePromise: function ( rowEntity, savePromise) {
                   service.setSavePromise(grid, rowEntity, savePromise);
                 },
                 /**
@@ -17530,11 +17533,10 @@ module.filter('px', function() {
                  * <pre>
                  *      gridApi.rowEdit.getDirtyRows(grid)
                  * </pre>
-                 * @param {object} grid the grid for which dirty rows should be returned
                  * @returns {array} An array of gridRows that are currently dirty
                  * 
                  */
-                getDirtyRows: function (grid) {
+                getDirtyRows: function () {
                   return grid.rowEdit.dirtyRows ? grid.rowEdit.dirtyRows : [];
                 },
                 /**
@@ -17545,11 +17547,10 @@ module.filter('px', function() {
                  * <pre>
                  *      gridApi.rowEdit.getErrorRows(grid)
                  * </pre>
-                 * @param {object} grid the grid for which errored rows should be returned
                  * @returns {array} An array of gridRows that are currently in error
                  * 
                  */
-                getErrorRows: function (grid) {
+                getErrorRows: function () {
                   return grid.rowEdit.errorRows ? grid.rowEdit.errorRows : [];
                 },
                 /**
@@ -17561,13 +17562,12 @@ module.filter('px', function() {
                  * <pre>
                  *      gridApi.rowEdit.flushDirtyRows(grid)
                  * </pre>
-                 * @param {object} grid the grid for which dirty rows should be flushed
                  * @returns {promise} a promise that represents the aggregate of all
                  * of the individual save promises - i.e. it will be resolved when all
                  * the individual save promises have been resolved.
                  * 
                  */
-                flushDirtyRows: function (grid) {
+                flushDirtyRows: function () {
                   return service.flushDirtyRows(grid);
                 },
                 
@@ -17585,12 +17585,11 @@ module.filter('px', function() {
                  *        gridApi.rowEdit.setRowsDirty(grid, myDataRows);
                  *      }, 0, 1);
                  * </pre>
-                 * @param {object} grid the grid for which rows should be set dirty
                  * @param {array} dataRows the data entities for which the gridRows
                  * should be set dirty.  
                  * 
                  */
-                setRowsDirty: function (grid, dataRows) {
+                setRowsDirty: function ( dataRows) {
                   service.setRowsDirty(grid, dataRows);
                 }
               }
@@ -17953,7 +17952,7 @@ module.filter('px', function() {
 
         /**
          * @ngdoc method
-         * @methodOf ui.grid.rowEdit.api:PublicApi
+         * @methodOf ui.grid.rowEdit.service:uiGridRowEditService
          * @name setRowsDirty
          * @description Sets each of the rows passed in dataRows
          * to be dirty.  note that if you have only just inserted the
@@ -17962,7 +17961,7 @@ module.filter('px', function() {
          * call in a $interval or $timeout
          * <pre>
          *      $interval( function() {
-         *        gridApi.rowEdit.setRowsDirty(grid, myDataRows);
+         *        gridApi.rowEdit.setRowsDirty( myDataRows);
          *      }, 0, 1);
          * </pre>
          * @param {object} grid the grid for which rows should be set dirty
@@ -19471,7 +19470,7 @@ module.filter('px', function() {
             registerRowSelectionEvents();
             // register a dataChange callback so that we can change the selection configuration dynamically
             // if the user changes the options
-            var callbackId = $scope.grid.registerDataChangeCallback( function() {
+            var dataChangeDereg = $scope.grid.registerDataChangeCallback( function() {
               if ( $scope.grid.options.enableRowSelection && !$scope.grid.options.enableRowHeaderSelection &&
                 !$scope.registered ){
                 registerRowSelectionEvents();
@@ -19481,9 +19480,7 @@ module.filter('px', function() {
               }
             }, [uiGridConstants.dataChange.OPTIONS] );
 
-            $elm.on( '$destroy', function() {
-              $scope.grid.deregisterDataChangeCallback( callbackId );
-            });
+            $elm.on( '$destroy', dataChangeDereg);
           }
         };
       }]);
@@ -19619,7 +19616,7 @@ angular.module('ui.grid').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('ui-grid/uiGridHeaderCell',
-    "<div ng-class=\"{ 'sortable': sortable }\"><div class=\"ui-grid-vertical-bar\">&nbsp;</div><div class=\"ui-grid-cell-contents\" col-index=\"renderIndex\"><span>{{ col.displayName CUSTOM_FILTERS }}</span> <span ui-grid-visible=\"col.sort.direction\" ng-class=\"{ 'ui-grid-icon-up-dir': col.sort.direction == asc, 'ui-grid-icon-down-dir': col.sort.direction == desc, 'ui-grid-icon-blank': !col.sort.direction }\">&nbsp;</span></div><div class=\"ui-grid-column-menu-button\" ng-if=\"grid.options.enableColumnMenus && !col.isRowHeader  && col.colDef.enableColumnMenu !== false\" class=\"ui-grid-column-menu-button\" ng-click=\"toggleMenu($event)\"><i class=\"ui-grid-icon-angle-down\">&nbsp;</i></div><div ng-if=\"filterable\" class=\"ui-grid-filter-container\" ng-repeat=\"colFilter in col.filters\"><input type=\"text\" class=\"ui-grid-filter-input\" ng-model=\"colFilter.term\" ng-attr-placeholder=\"{{colFilter.placeholder || ''}}\"><div class=\"ui-grid-filter-button\" ng-click=\"colFilter.term = null\"><i class=\"ui-grid-icon-cancel\" ng-show=\"!!colFilter.term\">&nbsp;</i><!-- use !! because angular interprets 'f' as false --></div></div></div>"
+    "<div ng-class=\"{ 'sortable': sortable }\"><div class=\"ui-grid-vertical-bar\">&nbsp;</div><div class=\"ui-grid-cell-contents\" col-index=\"renderIndex\"><span>{{ col.displayName CUSTOM_FILTERS }}</span> <span ui-grid-visible=\"col.sort.direction\" ng-class=\"{ 'ui-grid-icon-up-dir': col.sort.direction == asc, 'ui-grid-icon-down-dir': col.sort.direction == desc, 'ui-grid-icon-blank': !col.sort.direction }\">&nbsp;</span></div><div class=\"ui-grid-column-menu-button\" ng-if=\"grid.options.enableColumnMenus && !col.isRowHeader  && col.colDef.enableColumnMenu !== false\" ng-click=\"toggleMenu($event)\" ng-class=\"{'ui-grid-column-menu-button-last-col': isLastCol}\"><i class=\"ui-grid-icon-angle-down\">&nbsp;</i></div><div ng-if=\"filterable\" class=\"ui-grid-filter-container\" ng-repeat=\"colFilter in col.filters\"><input type=\"text\" class=\"ui-grid-filter-input\" ng-model=\"colFilter.term\" ng-attr-placeholder=\"{{colFilter.placeholder || ''}}\"><div class=\"ui-grid-filter-button\" ng-click=\"colFilter.term = null\"><i class=\"ui-grid-icon-cancel\" ng-show=\"!!colFilter.term\">&nbsp;</i><!-- use !! because angular interprets 'f' as false --></div></div></div>"
   );
 
 
