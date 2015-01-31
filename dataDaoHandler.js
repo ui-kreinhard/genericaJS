@@ -28,8 +28,10 @@ exports.dataDaoHandler = function() {
         },
         remove: function(sessionID) {
             var dataDaoOfSession = dataDaos[sessionID];
-            dataDaoOfSession.holdedDataDao.closeConnection();
-            delete dataDaos[sessionID];
+            if(dataDaoOfSession) {
+                dataDaoOfSession.holdedDataDao.closeConnection();
+                delete dataDaos[sessionID];
+            }
         },
         getSessions: function() {
             var ret = [];
