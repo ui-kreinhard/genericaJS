@@ -25,9 +25,6 @@ exports.dataDao = function(connection) {
                         filter += ' AND ' + property + '=' + "'" + term + "'";    
                     break;
                 }
-                
-                
-                
             }
         }
         return filter;
@@ -122,19 +119,6 @@ exports.dataDao = function(connection) {
             getSchema: function(endQuery) {
                 var transformationRules = [
                     function(result) {
-                        if (result.data_type == 'combobox') {
-                            result.selectionElements = [];
-                            if (result.valuescombobox) {
-                                var values = result.valuescombobox.split(",");
-                                var labels = result.labels.split(",");
-                                for (var i = 0; i < values.length; i++) {
-                                    result.selectionElements.push({
-                                        value: values[i],
-                                        label: labels[i]
-                                    });
-                                }
-                            }
-                        }
                         return result;
                     }
                 ];
@@ -160,7 +144,6 @@ exports.dataDao = function(connection) {
                         },
                         params.errorHandler,
                         function() {
-
                             endQuery();
                         }
 

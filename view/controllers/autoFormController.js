@@ -64,7 +64,7 @@ app.controller('autoFormController', function($scope, $http, $routeParams, retur
                     $scope.comboboxes = {};
                     angular.forEach($scope.dataSchema, function(schemaObject, key) {
                         if(schemaObject.data_type=='combobox') {
-                            $scope.comboboxes[schemaObject.field] = schemaObject.selectionElements;
+                            $scope.comboboxes[schemaObject.field] = schemaObject.selection_elements;
                         }
                     });
                 }).
@@ -135,16 +135,9 @@ app.directive('autoform', function($compile) {
                         '<ui-select ng-model="model.' + field + '" theme="bootstrap" ng-disabled="disabled">' +
                         '<ui-select-match placeholder="Type or select">{{$select.selected.label}}</ui-select-match>' +
                         '<ui-select-choices repeat="item.value as item in comboboxes.' + field + '| filter: $select.search">' +
-                        '<span ng-bind-html="item.label">item.label</span>' +
+                        '<span ng-bind-html="item.label">item.value</span>' +
                         '</ui-select-choices>' +
                         '</ui-select>';
-//                retStr += '<ul><li ng-repeat="item in comboboxes.' + field + '">{{item.label}}</li></ul>';
-                var selectionElements = scope.content.selectionElements;
-//                retStr += '<select style="width: 100%" ng-model="model.' + field + '" id="' + field + '">';
-//                angular.forEach(selectionElements, function(value, key) {
-//                    retStr += '<option value="' + value.value + '">' + value.label + '</option>';
-//                });
-//                retStr += '</select>';
                 break;
             case 'character varying':
                 if (textLength < 65) {
@@ -184,9 +177,7 @@ app.directive('autoform', function($compile) {
     var linker = function(scope, element, attrs) {
         var modelName = "model." + scope.content.field;
         element.html(getTemplate(scope)).show();
-        //   if (typeof scope.content.inputField != 'undefined') {
         // wire event listeners, this is important for client side validation
-//        var modelName = "scope.$parent.model." + scope.content.field;
         scope.$watch(modelName, function() {
             scope.$emit('fireTriggers', modelName);
         });
