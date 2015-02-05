@@ -64,9 +64,7 @@ app.service('gridOptionsService', function() {
                 }
             };
             savedGridOptions[viewName].that = savedGridOptions[viewName];
-        }
-        // hack - lets see if this fixes the fuckup
-        
+        }      
         return savedGridOptions[viewName];
     };
 });

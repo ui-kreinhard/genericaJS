@@ -1,8 +1,9 @@
 app.controller('menuController', function($scope, $http, $routeParams, $location, menuElementService) {
     $scope.showSearch = false;
-    this.assignNewMenu = function(menuItems) {
+    this.assignNewMenu = function(menuItems, allItems) {
         $scope.showSearch = true;
         $scope.menuItems = menuItems;
+        $scope.allItems = allItems;
     };
     menuElementService.registerController(this);
 
@@ -43,7 +44,7 @@ app.controller('menuController', function($scope, $http, $routeParams, $location
     };
 
     $scope.expandAll = function() {
-        $scope.expandedNodes = $scope.menuItems;
+        $scope.expandedNodes = $scope.allItems;
 
     };
 

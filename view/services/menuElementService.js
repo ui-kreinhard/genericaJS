@@ -7,13 +7,15 @@ app.service('menuElementService', function($http) {
     };
     var loadNewMenu = function(untransformedData) {
         var idMappedData = {};
+        var allItems = [];
+        
         angular.forEach(untransformedData, function(value, key) {
             idMappedData[value.id] = {
                 menu_idmenu: value.menu_idmenu,
                 menulabel: value.menulabel,
                 link: value.link,
                 children: [],
-                parent: false
+                parent: false,
             };
 
             idMappedData[value.id].hasLink = function() {
@@ -23,6 +25,7 @@ app.service('menuElementService', function($http) {
                 return value.link == null || value.link=='';
             };
 
+            allItems.push(idMappedData[value.id]);
         });
         angular.forEach(idMappedData, function(value, key) {
             if (value.menu_idmenu != null && value.menu_idmenu !== '') {
@@ -41,7 +44,7 @@ app.service('menuElementService', function($http) {
             }
         });
         angular.forEach(registeredControllers, function(value) {
-            value.assignNewMenu(menuItems);
+            value.assignNewMenu(menuItems, allItems);
         });
     };
     this.getMenuItems = function() {

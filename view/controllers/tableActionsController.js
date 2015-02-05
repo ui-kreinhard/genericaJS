@@ -17,7 +17,7 @@ app.controller('tableActionsController', function($scope, $http, $routeParams, $
         };
         $scope.editUrl = '#' + $location.path();
         editUrlTemplate = '#autoform/' + tableActions.UPDATE.target_table_name + '/' + tableActions.UPDATE.source_table_name + '/';
-        $scope.createUrl = '#autoform/' + tableActions.INSERT.target_table_name + '/' + tableActions.INSERT.source_table_name  + '/0';
+        $scope.createUrl = '#autoform/' + tableActions.INSERT.target_table_name + '/' + tableActions.INSERT.source_table_name + '/0';
         $scope.deleteUrl = '#autoform/delete';
         $scope.exportToCsv = "../exportToCsv?tableName=" + viewName;
         $scope.importCsv = "#/upload_csv/" + viewName;
@@ -49,9 +49,8 @@ app.controller('tableActionsController', function($scope, $http, $routeParams, $
             url: '../delete'
         }).
                 success(function(data, status, headers, config) {
-            alert('deleted ' + selectedItemIds.length + ' records');
+              $scope.$parent.gridApi.selection.clearSelectedRows();
             $scope.$parent.getPagedDataAsync();
-            $scope.$parent.gridOptions.selectedItems.clearSelection();
         }).
                 error(function(data, status, headers, config) {
             $scope.errors.errorList = data.errors;

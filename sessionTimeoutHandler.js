@@ -19,6 +19,4 @@ exports.sessionTimeoutHandler = function(dataDaoHandler, sessionTimeOut) {
     new CronJob('0 * * * * *', function() {
         cleanUpSessions();
     }, null, true, "America/Los_Angeles");
-
-
-}
+};

@@ -28,22 +28,22 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
             $scope.gridApi.core.on.filterChanged($scope, function() {
                 var grid = this.grid;
                 $scope.filter = {};
-                
+
                 angular.forEach(grid.columns, function(column) {
                     var filter = {
                         term: column.filters[0].term,
                         field: column.colDef.field,
                         operator: 'LIKE'
                     };
-                    if(typeof filter.term !='undefined' && filter.term!=null && filter.term!='') {
+                    if (typeof filter.term != 'undefined' && filter.term != null && filter.term != '') {
                         $scope.filter[column.colDef.field] = filter;
                     }
                 });
-                if(typeof refreshIdTimeout !='undefined') {
+                if (typeof refreshIdTimeout != 'undefined') {
                     clearTimeout(refreshIdTimeout);
                 }
-                
-                refreshIdTimeout = window.setTimeout($scope.getPagedDataAsync,400);
+
+                refreshIdTimeout = window.setTimeout($scope.getPagedDataAsync, 400);
             });
             $scope.gridApi.colMovable.on.columnPositionChanged($scope, function() {
                 if (!$scope.saveReOrder) {
@@ -97,13 +97,19 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
                 $scope.pagingOptions.pageSize = pageSize;
                 $scope.getPagedDataAsync();
             });
-            gridApi.selection.on.rowSelectionChanged($scope, function(row) {
+            function selectionChanged(row) {
                 if (row.isSelected) {
                     $scope.gridOptions.selectedItems.add(row.entity.id);
                 } else {
                     $scope.gridOptions.selectedItems.remove(row.entity.id);
                 }
                 $scope.gridOptions.afterSelectionChange(viewName);
+            }
+            gridApi.selection.on.rowSelectionChanged($scope, selectionChanged);
+            gridApi.selection.on.rowSelectionChangedBatch($scope, function(rows) {
+                angular.forEach(rows, function(value) {
+                    selectionChanged(value);
+                });
             });
         });
         gridApi.core.raise.sortChanged(gridApi.grid, $scope.gridOptions.sortOptions);
@@ -152,7 +158,7 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
                     columns = data.schema;
 
                     $scope.gridOptions.totalItems = data.dataCount;
-                    
+
 
                     $scope.rights.canDelete = data.rights.canDelete;
                     $scope.rights.canInsert = data.rights.canInsert;
