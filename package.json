@@ -1,0 +1,37 @@
+{
+  "name": "genericaJS",
+  "version": "0.0.0",
+  "description": "A tool for showing tables and form directly from a database table. no app server coding needed. RAP plattform",
+  "main": "express.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ui-kreinhard/genericaJS.git"
+  },
+  "author": "K-L Reinhard <kl.reinhard@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ui-kreinhard/genericaJS/issues"
+  },
+  "devDependencies": {
+    "cookie-parser": "~1.3.3",
+    "express-session": "~1.10.2",
+    "cookie-session": "~1.1.0",
+    "body-parser": "~1.11.0",
+    "express": "~4.11.2",
+    "pg": "~4.2.0",
+    "cron": "~1.0.6",
+    "time": "~0.11.0",
+    "json2csv": "~2.2.1",
+    "multer": "~0.1.7",
+    "timer-stopwatch": "~0.1.5",
+    "scribe-js": "~2.0.4",
+    "compression": "~1.4.0",
+    "request": "~2.53.0"
+  }
+}
