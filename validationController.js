@@ -14,7 +14,7 @@ exports.validatonController = function(dataDao, connection) {
 				tableName: 'check_constraints',
 				successHandler: successHandlerReadout,
 				filter: {
-					table_name: tableName
+					table_name: { term: tableName, field: 'table_name'}
 				}  
 			});
 		},
