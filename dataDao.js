@@ -188,6 +188,9 @@ exports.dataDao = function(connection) {
                             if (value != null) {
                                 columns.push('"' + attributename + '"');
                                 values.push("'" + value + "'");
+                            } else {
+                                columns.push('"' + attributename + '"');
+                                values.push(null);
                             }
                         }
                     };
