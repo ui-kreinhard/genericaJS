@@ -42,6 +42,7 @@ exports.dbHandler = function(username, password, errorHandler, successHandler) {
         var retQuery = client.oldQuery(query,
                 function(err) {
                     if (err != null) {
+                        logger.log(query);
                         errorHandlerQuery(err);
                     }
                 });
