@@ -20,8 +20,8 @@ exports.formElementsOrder = function(app) {
                         res.send(err);
                     };
                     deleteParams.filter = {
-                        table_name: req.body.table_name,
-                        schema_name: req.body.table_schema
+                        table_name: { term: req.body.table_name},
+                        schema_name: {term: req.body.table_schema}
                     };
                     deleteParams.successHandler = function(response) {
                         var i = 0;
