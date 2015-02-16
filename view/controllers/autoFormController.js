@@ -69,9 +69,18 @@ app.controller('autoFormController', function($scope, $http, $routeParams, retur
                     });
                 }).
                 error(function(data, status, headers, config) {
-            $scope.errors.errorList = [];
-
-            $scope.errors.errorList = data.errors;
+                $scope.errors.errorList = [];
+                if(data.errors) {
+                    $scope.errors.errorList = data.errors;
+                } else {
+                    var obj = {
+                       title: 'System Error',
+                       errormessage: JSON.stringify(data),
+                       type: 'error'
+                    };
+                    
+                    $scope.errors.errorList.push(obj);
+                }
         });
 
 
@@ -139,8 +148,11 @@ app.directive('autoform', function($compile) {
                         '</ui-select-choices>' +
                         '</ui-select>';
                 break;
+            case 'password':
+                 retStr += '<input class="form-control" type="password" style="width: 100%" ng-model="model.' + field + '" id="' + field + '"></input>';
+                break;
             case 'character varying':
-                if (textLength < 65) {
+                if (textLength < 256) {
                     retStr += '<input class="form-control" style="width: 100%" ng-model="model.' + field + '" id="' + field + '"></input>';
                 } else {
                     retStr += '<textarea class="form-control" class="also" style="resize:vertical; width: 100%; height: 50px "  ng-model="model.' + field + '" id="' + field + '"></textarea>';

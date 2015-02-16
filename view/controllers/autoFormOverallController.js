@@ -3,7 +3,7 @@ app.controller('autoFormOverallController', function($scope, $http, $routeParams
     var registeredForms = [];
     $scope.ids = gridOptionsService.getGridOptions(viewName).selectedItems.getAsArray();
     if($scope.ids.length <=0) {
-        $scope.ids.push(0);
+        $scope.ids.push($routeParams.id);
     }
     $scope.registerSubController = function($submitMethod) {
         registeredForms.push($submitMethod);

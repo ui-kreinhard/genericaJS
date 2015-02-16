@@ -45,38 +45,14 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
 
                 refreshIdTimeout = window.setTimeout($scope.getPagedDataAsync, 400);
             });
+
             $scope.gridApi.colMovable.on.columnPositionChanged($scope, function() {
                 if (!$scope.saveReOrder) {
                     return;
                 }
-                var tableNameSchema = viewName.split(".");
-                var dataToBeSent = {
-                    formElements: [],
-                    table_name: tableNameSchema[1],
-                    table_schema: tableNameSchema[0]
-                };
 
-                // ignore first column
-                angular.forEach(gridApi.grid.columns.slice(1), function(value, key) {
-                    var entry = {
-                        column_name: value.colDef.name,
-                        id: viewName,
-                        table_name: dataToBeSent.table_name,
-                        table_schema: dataToBeSent.table_schema
-                    };
-                    dataToBeSent.formElements.push(entry);
-                });
-                $http({
-                    method: 'POST',
-                    data: dataToBeSent,
-                    url: '/update_formelements_order'
-                }).
-                        success(
-                        function(data, status, headers, config) {
-                        }).
-                        error(function(data, status, headers, config) {
-                });
             });
+
             $scope.gridApi.core.on.sortChanged($scope, function(grid, sortColumns) {
                 var savedSortInfo = {
                     fields: [],
@@ -218,8 +194,37 @@ app.controller('gridController', function($scope, $http, $routeParams, gridOptio
 
                                 if ($scope.saveReOrder) {
                                     that.title = 'Disable Saving Order';
+
+
                                 } else {
                                     that.title = 'Enable Saving Order';
+                                    var tableNameSchema = viewName.split(".");
+                                    var dataToBeSent = {
+                                        formElements: [],
+                                        table_name: tableNameSchema[1],
+                                        table_schema: tableNameSchema[0]
+                                    };
+
+                                    // ignore first column
+                                    angular.forEach($scope.gridApi.grid.columns.slice(1), function(value, key) {
+                                        var entry = {
+                                            column_name: value.colDef.name,
+                                            id: viewName,
+                                            table_name: dataToBeSent.table_name,
+                                            table_schema: dataToBeSent.table_schema
+                                        };
+                                        dataToBeSent.formElements.push(entry);
+                                    });
+                                    $http({
+                                        method: 'POST',
+                                        data: dataToBeSent,
+                                        url: '/update_formelements_order'
+                                    }).
+                                            success(
+                                            function(data, status, headers, config) {
+                                            }).
+                                            error(function(data, status, headers, config) {
+                                    });
                                 }
                             };
                         }(customizeMenuObject);

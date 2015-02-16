@@ -2,6 +2,16 @@ app.controller('tableActionsController', function($scope, $http, $routeParams, $
     var viewName = $routeParams.viewName;
     returnPageService.setReturnPage();
 
+    function getDataTypeOfId() {
+        var ret = 'integer';
+        angular.forEach($scope.$parent.gridOptions.columnDefs, function(value) {
+            if(value.field=='id') {
+                ret = value.data_type;
+            }
+        });
+        return ret;
+    }
+
     var editUrlTemplate = '';
     var deleteView = $routeParams.viewName;
     var selectedItemIds = [];
@@ -17,7 +27,12 @@ app.controller('tableActionsController', function($scope, $http, $routeParams, $
         };
         $scope.editUrl = '#' + $location.path();
         editUrlTemplate = '#autoform/' + tableActions.UPDATE.target_table_name + '/' + tableActions.UPDATE.source_table_name + '/';
-        $scope.createUrl = '#autoform/' + tableActions.INSERT.target_table_name + '/' + tableActions.INSERT.source_table_name + '/0';
+        // make uuid compatible for migration to uuids
+        if(getDataTypeOfId() == 'integer') {
+            $scope.createUrl = '#autoform/' + tableActions.INSERT.target_table_name + '/' + tableActions.INSERT.source_table_name + '/0';
+        } else {
+            $scope.createUrl = '#autoform/' + tableActions.INSERT.target_table_name + '/' + tableActions.INSERT.source_table_name + '/aba6f076-b0f5-4aae-9307-113613dc9ab9';
+        }
         $scope.deleteUrl = '#autoform/delete';
         $scope.exportToCsv = "../exportToCsv?tableName=" + viewName;
         $scope.importCsv = "#/upload_csv/" + viewName;
