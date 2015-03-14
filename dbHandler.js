@@ -1,14 +1,19 @@
 var scribe = process.scribe;
-
-var logger = scribe.console({
-    console: {
-        colors: 'white'
-    },
-    logWriter: {
-        rootPath: 'sql_logs'
-    }
-});
-
+if(scribe) {
+    var logger = scribe.console({
+        console: {
+            colors: 'white'
+        },
+        logWriter: {
+            rootPath: 'sql_logs'
+        }
+    });
+} else {
+    var logger = {
+      error: console.log,
+      log: console.log
+    };
+}
 
 exports.dbHandler = function(username, password, errorHandler, successHandler) {
     var config = require('./config.js').config();
@@ -34,6 +39,7 @@ exports.dbHandler = function(username, password, errorHandler, successHandler) {
     });
 
     client.oldQuery = client.query;
+    
     client.query = function(query, successHandlerQuery, errorHandlerQuery, endQuery, transformationRules) {
         var stopwatch = new Stopwatch();
 
@@ -66,6 +72,18 @@ exports.dbHandler = function(username, password, errorHandler, successHandler) {
         }
         retQuery.on('end', endQuery);
 
+    };
+    
+    client.queryP =  function(query, successHandlerQuery, transformationRules) {
+        var defer = Q.defer();
+        client.query(
+            query,
+            successHandlerQuery,
+            defer.reject,
+            defer.resolve,
+            transformationRules
+            );
+        return defer.promise();
     };
     return client;
 };
