@@ -1,6 +1,11 @@
+var scribe = require('scribe-js')();
+
+
 var dbHandler = require('../dbHandler.js');
 var config = require('../config.js').config();
 var userConfig = require('./userConfig.js').config();
+var fs = require('fs')
+
 
 var username=userConfig.username;
 var password=userConfig.password;
@@ -8,25 +13,14 @@ var password=userConfig.password;
 var hardwareId = '';
 var removeAdd = 'add';
 
-var hardwareIdIndex = process.argv.length - 1;
-var removeAddIndex = process.argv.length - 2;
+var removeAddIndex = process.argv.length - 1;
 process.argv.forEach(function (val, index, array) {
-	if(index==hardwareIdIndex) {
-		hardwareId = val;
-	} else if(index==removeAddIndex) {
-		removeAddIndex = val;
+	if(index==removeAddIndex) {
+		removeAdd = val;
 	}
 });
-var sql = ''; 
-if(removeAddIndex == 'add') {
-   sql = "select add_keyring('" + hardwareId + "')";
-} else {
-   sql = "select remove_keyring('" + hardwareId + "')";
-}
 
-var successOfConnection = function(connection) {
-	connection.query("select add_keyring('" + hardwareId + '")');	
-};
+
 
 var connection = dbHandler.dbHandler(username, password,
 	function() {
@@ -34,16 +28,27 @@ var connection = dbHandler.dbHandler(username, password,
 	console.log('db connection failed');
         }, 
 	function() {
-            connection.query(sql,
-	    function(result) {
-            },
-            function(err) {
-		console.log(err);
-	    },
-            function() {
-		console.log('updated');
-		connection.end();
-            });
+            
 	}
 );
-
+var m = function() {
+                console.log('waiting')
+                var hw_id = fs.readFileSync(removeAdd);
+                var sql = '';
+                if(removeAdd=='add') {
+                    sql = "select add_keyring('" + hw_id + "')"
+                } else {
+                    sql = "select remove_keyring('" + hw_id + "')"
+                }
+                    
+                console.log("select add_keyring('" + hw_id + "')");
+                connection.query(sql, function(result) {
+                    console.log(result);
+                }, function(err) {
+                    console.log(err);
+                }, function() {
+                    console.log('updated');
+                               setTimeout(m,1);
+                })
+            };
+           setTimeout(m,1);
