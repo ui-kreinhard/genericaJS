@@ -14,7 +14,6 @@ var configPg = {
     password:  userConfig.password
 };
 
-var pgConString = "postgres://postgres:hieWueS8@localhost:5432/complete_clean_schema";
 
 var httpHandler = function(methodConfiguration) {
     return function(err, client) {

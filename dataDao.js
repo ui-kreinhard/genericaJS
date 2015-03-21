@@ -1,41 +1,33 @@
 
 exports.dataDao = function(connection) {
-    var setSessionCommands = function() {
-        connection.query("SET datestyle = 'MDY'", function(result) {
-           console.log(result);
-
-        },
-              function() {},
-                function() {});
-    };
-    setSessionCommands();
-    
-    var getFilter = function(params) {
+    var Q = require('q');
+    function getFilter(params) {
         var filter = ' WHERE 1=1 ';
         if (params.filter) {
             for (var property in params.filter) {
                 var filterObject = params.filter[property];
-                var term = filterObject.term;                
-                switch(filterObject.operator) {
+                var term = filterObject.term;
+                switch (filterObject.operator) {
                     case 'LIKE':
                         filter += ' AND ' + property + '::varchar LIKE ' + "'" + term + "%'";
-                    break;
+                        break;
                     case '=':
                     default:
-                        filter += ' AND ' + property + '=' + "'" + term + "'";    
-                    break;
+                        filter += ' AND ' + property + '=' + "'" + term + "'";
+                        break;
                 }
             }
         }
         return filter;
-    };
-    var getOrderBy = function(params) {
+    }
+    
+    function getOrderBy(params) {
         var orderByString = '';
 
         if (params.orderBy) {
             if (typeof params.orderBy == 'string') {
                 orderByString = ' ORDER BY ' + params.orderBy + ' ' + params.orderByDirection;
-            } else if(params.orderBy.length > 0){
+            } else if (params.orderBy.length > 0) {
                 var newOrderByArray = [];
                 for (var i = 0; i < params.orderBy.length; i++) {
                     newOrderByArray.push(params.orderBy[i] + ' ' + params.orderByDirection[i]);
@@ -44,14 +36,15 @@ exports.dataDao = function(connection) {
             }
         }
         return orderByString;
-    };
-    var getOffset = function(params) {
+    }
+    
+    function getOffset(params) {
         var offset = '';
         if (params.pageSize && params.page) {
             offset = ' LIMIT ' + params.pageSize + ' OFFSET ' + (params.pageSize * (params.page - 1));
         }
         return offset;
-    };
+    }
 
     var localFunctions = function(params, response) {
         return {
@@ -63,7 +56,7 @@ exports.dataDao = function(connection) {
                     filter = " where id IN (" + params.id.join() + ')';
                 }
                 connection.query("delete from " + params.tableName + filter,
-                        function(result) {
+                        function() {
 
                         },
                         params.errorHandler,
@@ -71,28 +64,32 @@ exports.dataDao = function(connection) {
                         );
             },
             getCount: function() {
+                var defer = Q.defer();
                 connection.query('select count(*) as "dataCount" from ' + params.tableName + getFilter(params),
                         function(result) {
                             response.dataCount = result.dataCount;
                         },
-                        params.errorHandler,
-                        function() {
-                            params.successHandler(response);
-                        }
-                );
+                        defer.reject,
+                        defer.resolve
+                        );
+                return defer.promise;
             },
             getTableActions: function(endQuery) {
+
+                var defer = Q.defer();
                 response.tableActions = {};
                 connection.query("select * from custom_table_actions where source_table_name = '" + params.tableName + "'",
                         function(result) {
                             response.tableActions[result.action_name] = result;
-                            
                         },
-                        params.errorHandler,
-                        endQuery
+                        defer.reject,
+                        defer.resolve
                         );
+                return defer.promise;
             },
             getRights: function(endQuery) {
+
+                var defer = Q.defer();
                 response.rights = {canRead: false, canInsert: false, canUpdate: false, canDelete: false};
                 connection.query("select * from table_rights where table_name = '" + params.tableName + "'",
                         function(result) {
@@ -112,11 +109,13 @@ exports.dataDao = function(connection) {
                                 response.rights.canCustomize = true;
                             }
                         },
-                        params.errorHandler,
-                        endQuery
+                        defer.reject,
+                        defer.resolve
                         );
+                return defer.promise;
             },
             getSchema: function(endQuery) {
+                var defer = Q.defer();
                 var transformationRules = [
                     function(result) {
                         return result;
@@ -127,12 +126,14 @@ exports.dataDao = function(connection) {
                         function(result) {
                             response.schema.push(result);
                         },
-                        params.errorHandler,
-                        endQuery, transformationRules);
+                        defer.reject,
+                        defer.resolve,
+                        transformationRules);
+                return defer.promise;
             },
             getData: function(endQuery) {
+                var defer = Q.defer();
                 var orderByString = '';
-                var newOrderByArray = [];
                 var filter = getFilter(params);
                 orderByString = getOrderBy(params);
 
@@ -142,16 +143,14 @@ exports.dataDao = function(connection) {
                         function(result) {
                             response.data.push(result);
                         },
-                        params.errorHandler,
-                        function() {
-                            endQuery();
-                        }
-
-                );
+                        defer.reject,
+                        defer.resolve
+                        );
+                return defer;
             }
 
         };
-    }
+    };
 
     var returnValue = {
         closeConnection: function() {
@@ -165,20 +164,15 @@ exports.dataDao = function(connection) {
             });
         },
         insertOrUpdateRecord: function(params) {
-            var validatonController = require('./validationController.js').validatonController(this, connection);
-            var dataToInsert = params.data;
-            var tableName = params.tableName;
             var response = {
                 schema: [],
                 data: []
             };
-            validatonController.validate({
-                tableName: tableName,
-                values: dataToInsert
-            }, function(result) {
-                var local = localFunctions(params, response);
-                local.getSchema(function(response) {
-                    var queryString = 'select 1';
+            var local = localFunctions(params, response);
+    
+    
+            function buildSql(response) {
+                    var queryString;
 
                     var columns = [];
                     var values = [];
@@ -222,24 +216,20 @@ exports.dataDao = function(connection) {
                         }
                         queryString += whereCondition;
                     }
-                    connection.query(queryString, function() {
-                    }, params.errorHandler, params.successHandler);
-                });
-            }, function(err) {
-                params.validationErrorHandler(err);
-            });
-
-
-        },
-        readOutSchemaData: function(params) {
-            var response = {
-                schema: []
-            };
-            var local = localFunctions(params, response);
-
-            local.getSchema(function() {
-                params.successHandler(response);
-            });
+                    connection.query(queryString, function() {}, params.errorHandler, params.successHandler);
+                }
+            
+         
+            var validatonController = require('./validationController.js').validatonController(this, connection);
+            var dataToInsert = params.data;
+            var tableName = params.tableName;
+            
+            validatonController.validatePromise({
+                tableName: tableName,
+                values: dataToInsert
+            },  params.validationErrorHandler).then(local.getSchema).
+                    then(buildSql, params.validationErrorHandler).
+                    catch(params.errorHandler);
         },
         readOutTable: function(params) {
 
@@ -248,16 +238,19 @@ exports.dataDao = function(connection) {
                 data: []
             };
             var local = localFunctions(params, response);
-            local.getTableActions(function() {
-                local.getRights(function() {
-                    local.getSchema(
-                            function() {
-                                local.getData(function() {
-                                    local.getCount();
-                                });
-                            }
-                    );
-                });
+
+            local.getTableActions().
+                    then(local.getRights).
+                    then(local.getSchema).
+                    then(local.getData).
+                    then(local.getCount).
+                    catch (
+                    function(err) {
+                        response = null;
+                        params.errorHandler(err);
+                    }
+            ).done(function() {
+                params.successHandler(response);
             });
         }
     };

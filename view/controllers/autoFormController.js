@@ -174,6 +174,9 @@ app.directive('autoform', function($compile) {
                         '<input class="form-control" type="text" data-time-format="HH:mm" ng-model="model.' + field + '"  bs-timepicker data-date-type="iso">';
                 break;
             case 'boolean':
+                if(!scope.model[field]) {
+                    scope.model[field] = false;
+                }
                 retStr += '<input style="width: 100%" type="checkbox" ng-model="model.' + field + '" id="' + field + '"></input>';
                 break;
             case 'id':
@@ -198,7 +201,6 @@ app.directive('autoform', function($compile) {
             var reader = new FileReader();
             reader.onload = function(onLoadEvent) {
                 var readText = onLoadEvent.target.result;
-                scope.model[modelName] = 'ab';
                 scope.model[modelName] = readText;
                 $('#' + modelName).val(readText);
                 scope.$emit('fireTriggers', "model." + modelName);

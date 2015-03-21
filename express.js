@@ -1,3 +1,5 @@
+require('sugar')
+
 var scribe = require('scribe-js')();
 var config = require('./config.js').config();
 

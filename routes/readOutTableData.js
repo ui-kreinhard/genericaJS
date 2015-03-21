@@ -11,7 +11,6 @@ exports.readOutTableData = function(app, dataDaoHandler) {
 
         query.errorHandler = function(err) {
             res.statusCode = 500;
-            console.log(err);
             res.send(err);
         };
         query.successHandler = function(response) {
