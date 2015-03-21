@@ -16,7 +16,6 @@ exports.formElementsOrder = function(app) {
                     deleteParams.tableName = 'formelements_order';
                     deleteParams.errorHandler = function(err) {
                         res.statusCode = 500;
-                        console.log(err);
                         res.send(err);
                     };
                     deleteParams.filter = {

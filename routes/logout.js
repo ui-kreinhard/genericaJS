@@ -1,8 +1,7 @@
 exports.logout = function(app,dataDaoHandler) {
+    var loginController = require('../loginController.js').loginController(dataDaoHandler);
 
     app.get('/logout', function(req, res) {
-        dataDaoHandler.remove(req.sessionID);
-        req.session.destroy();
-        res.end();
+        loginController.logout(req.sessionID);
     });
 };
