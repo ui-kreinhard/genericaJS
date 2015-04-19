@@ -1,4 +1,4 @@
-
+var Q = require('q')
 exports.loginController = function(dataDaoHandler) {
     var dbHandler = require('./dbHandler.js');
 
@@ -19,6 +19,12 @@ exports.loginController = function(dataDaoHandler) {
                         }
                 );
             }
+        },
+        loginQ: function(username, password, sessionID) {
+            var defer = Q.defer();
+            this.login(username, password, sessionID, defer.resolve, defer.reject);
+            return defer.promise;
         }
+
     };
 };

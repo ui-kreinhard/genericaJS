@@ -1,3 +1,4 @@
+var Q = require('q')
 var scribe = process.scribe;
 if(scribe) {
     var logger = scribe.console({
@@ -74,16 +75,22 @@ exports.dbHandler = function(username, password, errorHandler, successHandler) {
 
     };
     
-    client.queryP =  function(query, successHandlerQuery, transformationRules) {
+    client.queryP =  function(query, transformationRules) {
         var defer = Q.defer();
+        var result = [];
         client.query(
             query,
-            successHandlerQuery,
+            function(res) {
+                result.push(res);
+            },
             defer.reject,
-            defer.resolve,
+            function() {
+                defer.resolve(result)
+            },
             transformationRules
             );
-        return defer.promise();
+
+        return defer.promise;
     };
     return client;
 };
