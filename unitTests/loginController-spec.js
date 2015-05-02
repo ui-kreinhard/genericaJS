@@ -19,10 +19,11 @@ describe('loginController - q', function () {
     afterEach(function () {
         loginControllerBuilt.logout('mysession')
     })
-    it('should suceeed', function (doneH, fail) {
+    it('should suceeed', function (done) {
         loginControllerBuilt.loginQ('postgres', 'aaaaa', 'mysession').catch(function () {
             expect(true).toBe(false)
-        }).finally(doneH)
+            done()
+        }).finally(done)
     })
 
     it('should fail', function (done) {
@@ -32,6 +33,7 @@ describe('loginController - q', function () {
     it("simple login with a lot of strange signs in pw", function (done) {
         loginControllerBuilt.loginQ('strange_user', '!!$$\\', 'mysession').catch(function () {
             expect(true).toBe(false);
+            done()
         }).finally(done)
     });
 });

@@ -1,5 +1,8 @@
+exports.dataDao = function (connection) {
+    require('sugar')
+    require('arguments')
+    var Q = require('q')
 
-exports.dataDao = function(connection) {
     function getFilter(params) {
         var filter = ' WHERE 1=1 ';
         if (params.filter) {
@@ -45,110 +48,98 @@ exports.dataDao = function(connection) {
         return offset;
     }
 
-    var localFunctions = function(params, response) {
-        return {
-            deleteRecord: function(endQuery) {
-                var filter = '';
-                if (params.filter) {
-                    filter = getFilter(params);
-                } else {
-                    filter = " where id IN (" + params.id.join() + ')';
-                }
-                connection.query("delete from " + params.tableName + filter,
-                        function() {
-
-                        },
-                        params.errorHandler,
-                        endQuery
-                        );
-            },
-            getCount: function() {
-                return connection.queryP('select count(*) as "dataCount" from ' + params.tableName + getFilter(params)).then(function(result) {
-                    response.dataCount = result[0];
-                })
-            },
-            getTableActions: function() {
-                return connection.queryP("select * from custom_table_actions where source_table_name = '" + params.tableName + "'").
-                    then(function(results) {
-                        response.tableActions = {}
-                        results.forEach(function(result) {
-                            response.tableActions[result.action_name] = result;
-                        });
-                    });
-            },
-            getRights: function() {
-                connection.queryP("select * from table_rights where table_name = '" + params.tableName + "'").
-                    then(function(results) {
-                        response.rights = {
-                            canRead: false,
-                            canInsert: false,
-                            canUpdate: false,
-                            canDelete: false,
-                            canCustomize: false
-                        }
-                        results.forEach(function(result) {
-                            response.rights.canRead |= result.priv == 'SELECT';
-                            response.rights.canInsert |= result.priv == 'INSERT';
-                            response.rights.canUpdate |= result.priv == 'UPDATE';
-                            response.rights.canDelete |= result.priv == 'DELETE';
-                            response.rights.canCustomize |= result.can_customize;
-                        })
-                    })
-            },
-            getSchema: function() {
-                return connection.queryP('select * from schema_and_translation where table_name = \'' + params.tableName + '\' ').
-                    then(function(result) {
-                        response.schema = result;
-                    })
-            },
-            getData: function() {
-                var filter = getFilter(params);
-                var orderByString = getOrderBy(params);
-                var offset = getOffset(params);
-
-                return connection.queryP('select * from ' + params.tableName + filter + orderByString + offset).then(function(result) {
-                    response.data = result
-                })
-            }
-        };
-    };
-    function readOutTableQ(params, response) {
-
-        var local = localFunctions(params, response);
-
-        return local.getTableActions().
-                then(local.getRights).
-                then(local.getSchema).
-                then(local.getData).
-                then(local.getCount);
+    function deleteRecord(params) {
+        var filter = '';
+        if (params.filter) {
+            filter = getFilter(params);
+        } else {
+            filter = " where id IN (" + params.id.join() + ')';
+        }
+        return connection.queryP("delete from " + params.tableName + filter);
     }
+
+    function getCount(params) {
+        return connection.queryP('select count(*) as "dataCount" from ' + params.tableName + getFilter(params)).then(function (result) {
+            return result[0].dataCount;
+        })
+    }
+
+    function getData(params) {
+        var filter = getFilter(params);
+        var orderByString = getOrderBy(params);
+        var offset = getOffset(params);
+
+        return connection.queryP('select * from ' + params.tableName + filter + orderByString + offset)
+    }
+
+    function getSchema(tableName) {
+        return connection.queryP('select * from schema_and_translation where table_name = \'' + tableName + '\' ')
+    }
+
+    function getRights(tableName) {
+        return connection.queryP("select * from table_rights where table_name = '" + tableName + "'").
+            then(function (results) {
+                var rights = {
+                    canRead: false,
+                    canInsert: false,
+                    canUpdate: false,
+                    canDelete: false,
+                    canCustomize: false
+                }
+                results.forEach(function (result) {
+                    rights.canRead |= result.priv == 'SELECT';
+                    rights.canInsert |= result.priv == 'INSERT';
+                    rights.canUpdate |= result.priv == 'UPDATE';
+                    rights.canDelete |= result.priv == 'DELETE';
+                    rights.canCustomize |= result.can_customize;
+                })
+                return rights;
+            })
+    }
+
+    function getTableActions(tableName) {
+        return connection.queryP("select * from custom_table_actions where source_table_name = '" + tableName + "'").
+            then(function (results) {
+                var tableActions = {}
+                results.forEach(function (result) {
+                    tableActions[result.action_name] = result;
+                });
+                return tableActions
+            });
+    }
+
+    function readOutTableQ(params) {
+        return Q.all([
+            getTableActions.cfillFromObject(params),
+            getRights.cfillFromObject(params),
+            getSchema.cfillFromObject(params),
+            getData(params),
+            getCount(params)
+        ]).spread(function (tableActions, rights, schema, data, dataCount) {
+            return arguments.pack()
+        })
+    }
+
     var returnValue = {
-        closeConnection: function() {
+        closeConnection: function () {
             connection.end();
         },
-        deleteRecord: function(params) {
-            var local = localFunctions(params, response);
-            var response = {};
-            local.deleteRecord(function() {
-                params.successHandler(response);
-            });
+        deleteRecord: function (params) {
+            return deleteRecord(params).
+                catch(params.errorHandler).
+                done(params.successHandler)
+
         },
-        insertOrUpdateRecord: function(params) {
-            var response = {
-                schema: [],
-                data: []
-            };
-            var local = localFunctions(params, response);
-
-
-            function buildSql(response) {
+        insertOrUpdateRecord: function (params) {
+            function buildSql() {
                 var queryString;
 
                 var columns = [];
                 var values = [];
-                var fillColumnsAndValues = function() {
+                var fillColumnsAndValues = function () {
                     for (var attributename in dataToInsert) {
                         var value = dataToInsert[attributename];
+
                         if (value != null) {
                             columns.push('"' + attributename + '"');
                             values.push("'" + value + "'");
@@ -170,7 +161,7 @@ exports.dataDao = function(connection) {
                     queryString = 'UPDATE ' + tableName + ' SET ';
                     var whereCondition = ' where id=';
                     var called = false;
-                    concatOperator = function() {
+                    concatOperator = function () {
                         if (!called) {
                             called = true;
                             return '';
@@ -186,7 +177,7 @@ exports.dataDao = function(connection) {
                     }
                     queryString += whereCondition;
                 }
-                connection.query(queryString, function() {
+                connection.query(queryString, function () {
                 }, params.errorHandler, params.successHandler);
             }
 
@@ -200,26 +191,24 @@ exports.dataDao = function(connection) {
                     tableName: tableName,
                     values: dataToInsert
                 }, params.validationErrorHandler).
-                then(local.getSchema).
+                then(getSchema.fill(tableName)).
                 then(buildSql, params.validationErrorHandler).
-                catch (params.errorHandler);
+                catch(params.errorHandler);
         },
-        readOutTable: function(params) {
-
+        readOutTable: function (params) {
             var response = {
                 schema: [],
                 data: []
             };
-            var local = localFunctions(params, response);
 
             readOutTableQ(params, response).
-                catch (function(err) {
+                catch(function (err) {
                     response = null;
                     params.errorHandler(err);
                 }).
-                done(function() {
-                   params.successHandler(response);
-            });
+                done(function () {
+                    params.successHandler(response);
+                });
         },
         readOutTableQ: readOutTableQ
     };

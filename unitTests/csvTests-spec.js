@@ -31,7 +31,7 @@ function login(username, password) {
     return ret;
 }
 
-describe("insert or update tests-", function() {
+xdescribe("insert or update tests-", function() {
     var db = login('postgres', 'aaaaa');
     beforeEach(db.login);
     var ret = {};

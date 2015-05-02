@@ -132,8 +132,7 @@ describe("formdata tests", function() {
 
     describe('readOutTableQ', function() {
         it("retrieval of available languages", function(done) {
-           var response = createResponse();
-           db.dataDao.readOutTableQ(createArgs('languages'), response).finally(function() {
+           db.dataDao.readOutTableQ(createArgs('languages')).then(function(response) {
                expect(response.schema).toNotBe(undefined);
                expect(response.data).toNotBe(undefined);
                expect(response.tableActions).toNotBe(undefined);
@@ -146,36 +145,33 @@ describe("formdata tests", function() {
 
 
                expect(response.dataCount).toNotBe(undefined);
-               done()
-           })
+           }).finally(done)
         });
 
         it("expected data of existing table", function(done) {
-            db.dataDao.readOutTableQ(createArgs('_____'), createResponse()).catch(function(err) {
+            db.dataDao.readOutTableQ(createArgs('_____')).catch(function(err) {
                 expect(err).not.toBeNull();
                 done()
             });
         });
 
         it("investigate data part", function(done) {
-            var response = createResponse();
-            db.dataDao.readOutTableQ(createArgs('languages'), response).finally(function() {
-                expect(response).toNotBe(null);
+            db.dataDao.readOutTableQ(createArgs('languages')).then(function(res) {
+                expect(res).toNotBe(null);
 
-                expect(response.data.length > 0).toBe(true);
-                expect(response.data[0].id).toBe(1);
-                expect(response.data[0].language_name).toBe('dummy');
+                expect(res.data.length > 0).toBe(true);
+                expect(res.data[0].id).toBe(1);
+                expect(res.data[0].language_name).toBe('dummy');
 
-                expect(response.data[1].id).toBe(2);
-                expect(response.data[1].language_name).toBe('english');
-                done();
-            });
+                expect(res.data[1].id).toBe(2);
+                expect(res.data[1].language_name).toBe('english');
+                done()
+            })
         });
 
 
         it("investigate data part", function(done) {
-            var response = createResponse();
-            db.dataDao.readOutTableQ(createArgs('languages', {id: {term: 3}}), response).finally(function() {
+            db.dataDao.readOutTableQ(createArgs('languages', {id: {term: 3}})).then(function(response) {
                 expect(response.data.length > 0).toBe(true);
                 expect(response.data[0].id).toBe(3);
                 expect(response.data[0].language_name).toBe('german');

@@ -1,26 +1,20 @@
-
-exports.validatonController = function(dataDao, connection) {
+exports.validatonController = function (dataDao, connection) {
     var Q = require('q');
     var isNotDefined = require('./modules/utils.js').utils.isNotDefined;
 
     function encloseInTicks(stringToBeTicked) {
         return "'" + stringToBeTicked + "'";
     }
-    
-    function readOutValidations(tableName, successHandlerReadout, errorHandlerReadout) {
-        var defer = Q.defer();
 
-       dataDao.readOutTable({
+    function readOutValidations(tableName, successHandlerReadout, errorHandlerReadout) {
+        return dataDao.readOutTableQ({
             tableName: 'check_constraints',
-            successHandler: defer.resolve,
-            errorHandler: defer.reject,
             filter: {
                 table_name: {term: tableName, field: 'table_name'}
             }
         });
-        return defer.promise;
     }
-    
+
     function createCheckSQL(rawCheckConditions, valuesP) {
 
         var values = [];
@@ -31,7 +25,7 @@ exports.validatonController = function(dataDao, connection) {
             checkConditionsIndexed[singleValue.column_name] = singleValue;
         }
 
-	var alreadyInWithPart = [];
+        var alreadyInWithPart = [];
         for (var i = 0; i < rawCheckConditions.length; i++) {
             var singleValue = rawCheckConditions[i];
 
@@ -41,11 +35,11 @@ exports.validatonController = function(dataDao, connection) {
                 value: valuesP[singleValue.column_name],
                 checkCondition: singleValue.check_clause,
                 dataType: singleValue.data_type,
-                createWithPart: function() {
-		    if(alreadyInWithPart.indexOf(this.columnName)!=-1) {
-			return '';
-		    }
-		    alreadyInWithPart.push(this.columnName);
+                createWithPart: function () {
+                    if (alreadyInWithPart.indexOf(this.columnName) != -1) {
+                        return '';
+                    }
+                    alreadyInWithPart.push(this.columnName);
                     var value = encloseInTicks(this.value);
                     if (this.columnName == null) {
                         return;
@@ -56,7 +50,7 @@ exports.validatonController = function(dataDao, connection) {
                     var returnStr = value + '::' + this.dataType + ' as ' + this.columnName;
                     return returnStr;
                 },
-                createSelectPart: function() {
+                createSelectPart: function () {
                     var isError = '1-count(*)';
                     if (this.checkCondition == null) {
                         isError = 0;
@@ -68,13 +62,12 @@ exports.validatonController = function(dataDao, connection) {
         }
 
 
-        return function() {
-            var defer = Q.defer();
+        return function () {
             var returnStr = "with to_check as (select 'dummyValue' as dummy";
             for (var i = 0; i < values.length; i++) {
                 var singleValue = values[i];
-		var withPart = singleValue.createWithPart();
-                returnStr += withPart!=''?',' + withPart:''; 
+                var withPart = singleValue.createWithPart();
+                returnStr += withPart != '' ? ',' + withPart : '';
             }
             returnStr += ') ';
 
@@ -87,26 +80,26 @@ exports.validatonController = function(dataDao, connection) {
             return returnStr;
         };
     }
-    
+
     function buildSql(values) {
-        return        function(response) {
+        return function (response) {
             var defer = Q.defer();
             var sql = createCheckSQL(response.data, values)();
             defer.resolve(sql);
             return defer.promise;
         };
     }
-    
+
     function fireSql(sql) {
         var defer = Q.defer();
-        connection.query(sql, function(resultRow) {
-        }, defer.reject,
-                defer.resolve
-                );
+        connection.query(sql, function (resultRow) {
+            }, defer.reject,
+            defer.resolve
+        );
         return defer.promise;
 
     }
-    
+
     function handleResponse(response) {
         var defer = Q.defer();
 
@@ -126,20 +119,20 @@ exports.validatonController = function(dataDao, connection) {
         }
         return defer.promise;
     }
-    
+
 
     return {
-        validate: function(dataToBeValidated, successHandler, errorHandler, endQuery) {
+        validate: function (dataToBeValidated, successHandler, errorHandler, endQuery) {
             var values = dataToBeValidated.values;
             var tableName = dataToBeValidated.tableName;
             readOutValidations(tableName).
-                    then(buildSql(values)).
-                    then(fireSql).
-                    then(handleResponse).
-                    then(successHandler).
-                    catch (errorHandler);
+                then(buildSql(values)).
+                then(fireSql).
+                then(handleResponse).
+                then(successHandler).
+                catch(errorHandler);
         },
-        validatePromise: function(dataToBeValidated) {
+        validatePromise: function (dataToBeValidated) {
             var defer = Q.defer();
             this.validate(dataToBeValidated, defer.resolve, defer.reject);
             return defer.promise;

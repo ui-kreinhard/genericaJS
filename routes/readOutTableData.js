@@ -9,15 +9,6 @@ exports.readOutTableData = function(app, dataDaoHandler) {
         var url_parts = url.parse(req.url, true);
         var query = req.body;
 
-        query.errorHandler = function(err) {
-            res.statusCode = 500;
-            res.send(err);
-        };
-        query.successHandler = function(response) {
-            res.statusCode = 200;
-            res.send(response);
-        };
-
         var validateOrderBy = function() {
             var orderByDirections;
             if (typeof query.orderByDirection == 'undefined') {
@@ -42,7 +33,13 @@ exports.readOutTableData = function(app, dataDaoHandler) {
                 (!query.pageSize, 'No pageSize specified')
                 (!query.page, 'No page specified')
                 (validateOrderBy, 'invalid direction', function() {
-                    dataDao.readOutTable(query);
+                    dataDao.readOutTableQ(query).then(function(response) {
+                        res.statusCode = 200;
+                        res.send(response);
+                    }).catch(function(err) {
+                        res.statusCode = 500;
+                        res.send(err);
+                    });
                 });
     });
 

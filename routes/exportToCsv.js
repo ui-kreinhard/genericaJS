@@ -31,7 +31,27 @@ exports.exportToCsv = function(app) {
             });
         };
         errorHandler(req, res)(isNotDefined(query.tableName) || query.tableName == '', 'No table specified', function() {
-            dataDao.readOutTable(query);
+            dataDao.readOutTableQ(query).then(function(response) {
+                res.statusCode = 200;
+
+                var attributes = Object.keys(response.data[0]);
+                json2csv({
+                    data: response.data,
+                    fields: attributes
+                }, function(err, csv) {
+                    if (err) {
+                        query.errorHandler(err);
+                        return;
+                    }
+                    res.setHeader('Content-disposition', 'attachment; filename=' + query.tableName + '.csv');
+                    res.send(csv);
+                });
+            }).
+            catch(function(err) {
+                    res.statusCode = 500;
+                    console.log(err);
+                    res.send(err);
+                });
         });
     });
 };
